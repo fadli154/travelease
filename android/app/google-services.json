@@ -12,7 +12,20 @@
           "package_name": "com.example.travelease"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "902987998369-rm0vph6o4kee8kelt32qulag7go8osi0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.travelease",
+            "certificate_hash": "50fbd8187987dca87c155a12f696b0a54f777e97"
+          }
+        },
+        {
+          "client_id": "902987998369-9g5qogcai5b1llorc3u9ln8ien3ighkj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCQLyiqFviBfkwwVu0W2HJOHkEfCGFHFSk"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "902987998369-9g5qogcai5b1llorc3u9ln8ien3ighkj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
