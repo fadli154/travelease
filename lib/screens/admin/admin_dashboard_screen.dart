@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../models/review_model.dart';
 import '../../services/firebase_service.dart';
@@ -17,6 +18,7 @@ class AdminDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final firebase = service ?? FirebaseService();
 
     return FutureBuilder<AdminDashboardData>(
@@ -26,7 +28,7 @@ class AdminDashboardScreen extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
+          return Center(child: Text(l10n.error(snapshot.error.toString())));
         }
 
         final data = snapshot.data!;
@@ -91,6 +93,7 @@ class _DashboardBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final categories = data.categories.entries.toList()
@@ -113,7 +116,7 @@ class _DashboardBody extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hello, $adminName',
+                  l10n.helloName(adminName),
                   style: theme.textTheme.headlineSmall?.copyWith(
                     color: colorScheme.onPrimary,
                     fontWeight: FontWeight.w800,
@@ -121,7 +124,7 @@ class _DashboardBody extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'TravelEase analytics overview',
+                  l10n.analyticsOverview,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: colorScheme.onPrimary.withValues(alpha: 0.9),
                   ),
@@ -131,7 +134,7 @@ class _DashboardBody extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.section),
           Text(
-            'Summary',
+            l10n.summary,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w800,
             ),
@@ -151,25 +154,25 @@ class _DashboardBody extends StatelessWidget {
                 children: [
                   _SummaryCard(
                     icon: Icons.place_rounded,
-                    label: 'Destinations',
+                    label: l10n.destinations,
                     value: '${data.destinations}',
                     color: colorScheme.primaryContainer,
                   ),
                   _SummaryCard(
                     icon: Icons.people_rounded,
-                    label: 'Users',
+                    label: l10n.users,
                     value: '${data.users}',
                     color: colorScheme.tertiaryContainer,
                   ),
                   _SummaryCard(
                     icon: Icons.reviews_rounded,
-                    label: 'Reviews',
+                    label: l10n.reviews,
                     value: '${data.reviews}',
                     color: colorScheme.secondaryContainer,
                   ),
                   _SummaryCard(
                     icon: Icons.favorite_rounded,
-                    label: 'Favorites',
+                    label: l10n.favorites,
                     value: '${data.favorites}',
                     color: colorScheme.errorContainer.withValues(alpha: 0.5),
                   ),
@@ -180,7 +183,7 @@ class _DashboardBody extends StatelessWidget {
           if (categories.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.section),
             Text(
-              'Destinations by category',
+              l10n.destinationsByCategory,
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w800,
               ),
@@ -266,7 +269,7 @@ class _DashboardBody extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Bar chart',
+                      l10n.barChart,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -350,17 +353,17 @@ class _DashboardBody extends StatelessWidget {
           ],
           const SizedBox(height: AppSpacing.section),
           Text(
-            'Recent reviews',
+            l10n.recentReviews,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
           if (data.recentReviews.isEmpty)
-            const Card(
+            Card(
               child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('No reviews yet.'),
+                padding: const EdgeInsets.all(24),
+                child: Text(l10n.noReviewsYet),
               ),
             )
           else
@@ -373,7 +376,7 @@ class _DashboardBody extends StatelessWidget {
                   ),
                   title: Text(r.userName),
                   subtitle: Text(
-                    r.comment.isEmpty ? 'No comment' : r.comment,
+                    r.comment.isEmpty ? l10n.noComment : r.comment,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),

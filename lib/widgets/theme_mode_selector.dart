@@ -19,18 +19,18 @@ class ThemeModeSelector extends StatelessWidget {
             segments: const [
               ButtonSegment(
                 value: ThemeMode.light,
-                label: Text('Light', style: TextStyle(fontSize: 12)),
-                icon: Icon(Icons.light_mode_outlined, size: 16),
+                label: Text('Light', style: TextStyle(fontSize: 10)),
+                icon: Icon(Icons.light_mode_outlined, size: 14),
               ),
               ButtonSegment(
                 value: ThemeMode.dark,
-                label: Text('Dark', style: TextStyle(fontSize: 12)),
-                icon: Icon(Icons.dark_mode_outlined, size: 16),
+                label: Text('Dark', style: TextStyle(fontSize: 10)),
+                icon: Icon(Icons.dark_mode_outlined, size: 14),
               ),
               ButtonSegment(
                 value: ThemeMode.system,
-                label: Text('System', style: TextStyle(fontSize: 12)),
-                icon: Icon(Icons.settings_brightness_outlined, size: 16),
+                label: Text('System', style: TextStyle(fontSize: 10)),
+                icon: Icon(Icons.settings_brightness_outlined, size: 14),
               ),
             ],
             selected: {controller.themeMode},

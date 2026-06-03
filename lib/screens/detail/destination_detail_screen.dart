@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../models/destination_model.dart';
 import '../../providers/auth_provider.dart';
@@ -71,6 +72,7 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
   Future<void> _toggleFavorite(String userId) async {
     if (_isToggling) return;
     final wasFavorite = _isFavorite;
+    final l10n = AppLocalizations.of(context)!;
 
     setState(() => _isToggling = true);
     try {
@@ -83,8 +85,8 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
       AppFeedback.success(
         context,
         wasFavorite
-            ? 'Favorite removed successfully'
-            : 'Favorite added successfully',
+            ? l10n.favoriteRemoved
+            : l10n.favoriteAdded,
       );
     } catch (e) {
       if (!mounted) return;
@@ -104,6 +106,7 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final destination = widget.destination;
     final auth = context.watch<AuthProvider>();
     final userId = auth.currentUser?.uid ?? '';
@@ -231,7 +234,7 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
                     ),
                     const SizedBox(height: AppSpacing.section),
                     Text(
-                      'Overview',
+                      l10n.overview,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -239,7 +242,7 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
                     const SizedBox(height: AppSpacing.sm),
                     Text(
                       destination.description.isEmpty
-                          ? 'No description available for this destination.'
+                          ? l10n.noDescription
                           : destination.description,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         height: 1.65,
@@ -282,18 +285,20 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not open map: $e')),
+          SnackBar(content: Text(l10n.couldNotOpenMap(e.toString()))),
         );
       }
     }
   }
 
   void _scrollToReviews(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // Review section is below the fold; user can scroll — show hint.
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Scroll down to write a review'),
+      SnackBar(
+        content: Text(l10n.scrollDownReview),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -360,6 +365,7 @@ class _StatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -373,30 +379,30 @@ class _StatsGrid extends StatelessWidget {
       children: [
         _StatTile(
           icon: Icons.location_on_rounded,
-          label: 'Location',
+          label: l10n.location,
           value: location,
           color: colorScheme.primaryContainer,
         ),
         _StatTile(
           icon: Icons.star_rounded,
-          label: 'Rating',
+          label: l10n.rating,
           value: rating.toStringAsFixed(1),
           subtitle: totalReviews > 0
-              ? '$totalReviews reviews'
-              : 'No reviews yet',
+              ? l10n.reviewsCount(totalReviews)
+              : l10n.noReviewsCount,
           color: Colors.amber.withValues(alpha: 0.2),
         ),
         _StatTile(
           icon: Icons.confirmation_number_outlined,
-          label: 'Ticket',
+          label: l10n.ticket,
           value: ticketPrice > 0
               ? 'Rp ${formatPrice(ticketPrice)}'
-              : 'Free / N/A',
+              : l10n.freeTicket,
           color: colorScheme.secondaryContainer,
         ),
         _StatTile(
           icon: Icons.reviews_outlined,
-          label: 'Reviews',
+          label: l10n.reviews,
           value: '$totalReviews',
           color: colorScheme.tertiaryContainer,
         ),
@@ -468,6 +474,7 @@ class _DetailActionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
@@ -479,8 +486,8 @@ class _DetailActionRow extends StatelessWidget {
                   : Icons.favorite_border_rounded,
             ),
             label: Text(
-              isFavorite ? 'Saved' : 'Favorite',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+              isFavorite ? l10n.saved : l10n.favorite,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
             ),
           ),
         ),
@@ -489,9 +496,9 @@ class _DetailActionRow extends StatelessWidget {
           child: FilledButton.tonalIcon(
             onPressed: onMaps,
             icon: const Icon(Icons.map_rounded),
-            label: const Text(
-              'Maps',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+            label: Text(
+              l10n.maps,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
             ),
           ),
         ),
@@ -500,9 +507,9 @@ class _DetailActionRow extends StatelessWidget {
           child: FilledButton.tonalIcon(
             onPressed: onReview,
             icon: const Icon(Icons.rate_review_outlined),
-            label: const Text(
-              'Review',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+            label: Text(
+              l10n.review,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
             ),
           ),
         ),

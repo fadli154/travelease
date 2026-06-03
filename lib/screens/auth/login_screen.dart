@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../widgets/auth_feedback.dart';
@@ -59,6 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final auth = context.watch<AuthProvider>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -106,14 +108,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Welcome back',
+                                        l10n.welcomeBack,
                                         style: theme.textTheme.titleLarge?.copyWith(
                                           color: colorScheme.onPrimary,
                                           fontWeight: FontWeight.w800,
                                         ),
                                       ),
                                       Text(
-                                        'Sign in to continue exploring',
+                                        l10n.signInSubtitle,
                                         style: theme.textTheme.bodyMedium?.copyWith(
                                           color: colorScheme.onPrimary.withValues(alpha: 0.9),
                                         ),
@@ -133,16 +135,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
                             enabled: !auth.isAuthActionLoading,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              prefixIcon: Icon(Icons.email_outlined),
+                            decoration: InputDecoration(
+                              labelText: l10n.email,
+                              prefixIcon: const Icon(Icons.email_outlined),
                             ),
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) {
-                                return 'Please enter your email';
+                                  return l10n.emailRequired;
                               }
                               if (!v.contains('@')) {
-                                return 'Please enter a valid email';
+                                  return l10n.emailInvalid;
                               }
                               return null;
                             },
@@ -158,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             enabled: !auth.isAuthActionLoading,
                             onFieldSubmitted: (_) => _signIn(),
                             decoration: InputDecoration(
-                              labelText: 'Password',
+                              labelText: l10n.password,
                               prefixIcon: const Icon(Icons.lock_outline_rounded),
                               suffixIcon: IconButton(
                                 icon: Icon(
@@ -172,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             validator: (v) {
                               if (v == null || v.isEmpty) {
-                                return 'Please enter your password';
+                                  return l10n.passwordRequired;
                               }
                               return null;
                             },
@@ -198,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Text('Sign In'),
+                                : Text(l10n.signIn),
                           ),
 
                           const SizedBox(height: 14),
@@ -214,7 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 borderRadius: BorderRadius.circular(16),
                               ),
                             ),
-                            child: const Text('Continue as guest'),
+                            child: Text(l10n.continueAsGuest),
                           ),
 
                           const SizedBox(height: 28),
@@ -225,7 +227,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16),
                                 child: Text(
-                                  'or continue with',
+                                  l10n.orContinueWith,
                                   style: theme.textTheme.labelMedium?.copyWith(
                                     color: colorScheme.onSurfaceVariant,
                                     fontWeight: FontWeight.w600,
@@ -250,7 +252,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                "Don't have an account?",
+                                l10n.dontHaveAccount,
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: colorScheme.onSurfaceVariant,
                                 ),
@@ -265,7 +267,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ),
                                         );
                                       },
-                                child: const Text('Register'),
+                                child: Text(l10n.register),
                               ),
                             ],
                           ),

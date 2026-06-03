@@ -39,5 +39,164 @@
   "ticketPrice": "Harga Tiket",
   "imageUrl": "URL Gambar",
   "latitude": "Latitude",
-  "longitude": "Longitude"
+  "longitude": "Longitude",
+  "account": "Akun",
+  "fullNameLabel": "Nama Lengkap",
+  "emailLabel": "Email",
+  "roleLabel": "Peran",
+  "roleAdmin": "Administrator",
+  "roleUser": "Pengguna",
+  "appearance": "Tampilan",
+  "session": "Sesi",
+  "profileUpdated": "Profil berhasil diperbarui",
+  "saveProfile": "Simpan profil",
+  "logout": "Keluar",
+  "notSignedIn": "Belum masuk",
+  "notSignedInSubtitle": "Masuk untuk menyimpan favorit, mengakses profil, dan lainnya.",
+  "demoAvatarNote": "Mode demo: avatar dibuat dari nama Anda.",
+  "signInSubtitle": "Masuk untuk melanjutkan petualangan",
+  "emailRequired": "Silakan masukkan email Anda",
+  "emailInvalid": "Format email tidak valid",
+  "passwordRequired": "Silakan masukkan kata sandi Anda",
+  "continueAsGuest": "Lanjutkan sebagai tamu",
+  "orContinueWith": "atau lanjutkan dengan",
+  "dontHaveAccount": "Belum punya akun?",
+  "register": "Daftar",
+  "createAccount": "Buat akun",
+  "joinTravelEase": "Gabung TravelEase",
+  "registerSubtitle": "Simpan destinasi favorit dan rencanakan liburan Anda.",
+  "fullName": "Nama lengkap",
+  "nameRequired": "Silakan masukkan nama Anda",
+  "nameTooShort": "Nama terlalu pendek",
+  "passwordRequiredRegister": "Silakan masukkan kata sandi",
+  "passwordTooShort": "Kata sandi minimal harus 6 karakter",
+  "confirmPassword": "Konfirmasi kata sandi",
+  "passwordsDoNotMatch": "Kata sandi tidak cocok",
+  "createAccountBtn": "Buat Akun",
+  "or": "atau",
+  "signUpWithGoogle": "Daftar dengan Google",
+  "alreadyHaveAccount": "Sudah punya akun? Masuk",
+  "homeWelcomeTitle": "Mau liburan ke mana selanjutnya?",
+  "featured": "Unggulan",
+  "featuredSubtitle": "Destinasi terbaik pilihan untukmu",
+  "popular": "Populer",
+  "popularSubtitle": "Destinasi hits di seluruh Indonesia",
+  "searchHint": "Pantai, candi, kota, pulau...",
+  "search": "Cari",
+  "searchUnavailable": "Pencarian tidak tersedia",
+  "all": "Semua",
+  "destinationsSearchCount": "{count} destinasi · ketuk kategori atau cari",
+  "@destinationsSearchCount": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "noResults": "Tidak ada hasil yang ditemukan",
+  "discoverIndonesia": "Jelajahi Indonesia",
+  "noResultsSubtitle": "Coba kata kunci lain atau bersihkan filter.",
+  "discoverIndonesiaSubtitle": "Cari berdasarkan nama, lokasi, atau pilih kategori di atas.",
+  "myFavorites": "Favorit Saya",
+  "signInToSaveFavorites": "Masuk untuk menyimpan favorit",
+  "signInToSaveFavoritesSubtitle": "Buat akun gratis untuk menandai destinasi favorit Anda.",
+  "errorLoadFavorites": "Gagal memuat favorit",
+  "favoritesEmpty": "Favorit Kosong",
+  "favoritesEmptySubtitle": "Simpan tempat yang Anda sukai — ketuk ikon hati pada destinasi.",
+  "errorLoadDestinations": "Gagal memuat destinasi",
+  "errorLoadDestinationsSubtitle": "Periksa koneksi internet atau aturan Firestore Anda.",
+  "emptyDestinations": "Belum ada destinasi",
+  "emptyDestinationsSubtitle": "Ketuk + Tambah untuk membuat destinasi pertama Anda.",
+  "error": "Kesalahan: {errorDetail}",
+  "@error": {
+    "placeholders": {
+      "errorDetail": {
+        "type": "String"
+      }
+    }
+  },
+  "helloName": "Halo, {name}",
+  "@helloName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsOverview": "Ikhtisar analitik TravelEase",
+  "summary": "Ringkasan",
+  "destinations": "Destinasi",
+  "users": "Pengguna",
+  "favorites": "Favorit",
+  "destinationsByCategory": "Destinasi per kategori",
+  "barChart": "Grafik batang",
+  "recentReviews": "Ulasan terbaru",
+  "noReviewsYet": "Belum ada ulasan.",
+  "noComment": "Tidak ada komentar",
+  "dismiss": "Tutup",
+  "authErrorDetailFallback": "Jika ini terus terjadi, coba masuk menggunakan email atau hubungi dukungan.",
+  "logoutSuccessTitle": "Berhasil keluar",
+  "logoutSuccessDesc": "Anda berhasil keluar. Sampai jumpa lagi!",
+  "signOutConfirmTitle": "Keluar?",
+  "signOutConfirmDesc": "Anda akan dialihkan kembali ke layar masuk.",
+  "skip": "Lewati",
+  "back": "Kembali",
+  "getStarted": "Mulai Sekarang",
+  "next": "Berikutnya",
+  "onboardingTitle1": "Temukan Destinasi Luar Biasa",
+  "onboardingSubtitle1": "Jelajahi tempat-tempat terbaik di seluruh Indonesia dengan foto dan detail yang menakjubkan.",
+  "onboardingTitle2": "Rencanakan Perjalanan Sempurna Anda",
+  "onboardingSubtitle2": "Temukan lokasi di peta dan navigasikan dengan Google Maps dalam sekali ketuk.",
+  "onboardingTitle3": "Simpan Favorit & Bagikan Ulasan",
+  "onboardingSubtitle3": "Tandai perjalanan yang Anda sukai dan bantu orang lain dengan ulasan yang jujur.",
+  "aiScanner": "AI Pemindai",
+  "favoriteRemoved": "Berhasil menghapus dari favorit",
+  "favoriteAdded": "Berhasil menambahkan ke favorit",
+  "scrollDownReview": "Gulir ke bawah untuk menulis ulasan",
+  "maps": "Peta",
+  "freeTicket": "Gratis / Tidak ada",
+  "noDescription": "Tidak ada deskripsi tersedia untuk destinasi ini.",
+  "reviewsCount": "{count} ulasan",
+  "@reviewsCount": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "noReviewsCount": "Belum ada ulasan",
+  "couldNotOpenMap": "Gagal membuka peta: {error}",
+  "@couldNotOpenMap": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "scannerTitleActive": "AI Pemindai TravelEase Aktif",
+  "scannerTitlePaused": "AI Pemindai TravelEase Berhenti",
+  "objectsCount": "{count} objek",
+  "@objectsCount": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "voice": "Suara",
+  "speed": "Kecepatan",
+  "conf": "Sensitivitas",
+  "voiceSpeedLabel": "Kecepatan suara",
+  "voiceCooldownLabel": "Interval pengulangan suara",
+  "sensitivityLabel": "Sensitivitas deteksi",
+  "startScan": "Mulai Pindai",
+  "stopScan": "Hentikan Pindai",
+  "detectedResult": "Hasil Deteksi",
+  "confidence": "Tingkat Keyakinan",
+  "origin": "Asal",
+  "landmarkInfo": "Informasi Landmark",
+  "foodInfo": "Informasi Makanan",
+  "locationLabel": "Lokasi",
+  "originLabel": "Asal Daerah",
+  "descriptionLabel": "Deskripsi"
 }

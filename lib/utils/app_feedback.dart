@@ -2,6 +2,8 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+
 /// Consistent CRUD and session feedback across the app.
 class AppFeedback {
   AppFeedback._();
@@ -68,8 +70,9 @@ class AppFeedback {
     BuildContext context, {
     required String title,
     required String message,
-    String deleteLabel = 'Delete',
+    String? deleteLabel,
   }) async {
+    final l10n = AppLocalizations.of(context)!;
     var confirmed = false;
     await AwesomeDialog(
       context: context,
@@ -79,20 +82,21 @@ class AppFeedback {
       desc: message,
       btnCancelOnPress: () {},
       btnOkOnPress: () => confirmed = true,
-      btnOkText: deleteLabel,
-      btnCancelText: 'Cancel',
+      btnOkText: deleteLabel ?? l10n.delete,
+      btnCancelText: l10n.cancel,
       btnOkColor: Theme.of(context).colorScheme.error,
     ).show();
     return confirmed;
   }
 
   static Future<void> logoutSuccess(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     await AwesomeDialog(
       context: context,
       dialogType: DialogType.success,
       animType: AnimType.scale,
-      title: 'Berhasil logout',
-      desc: 'Anda berhasil logout. Sampai jumpa lagi!',
+      title: l10n.logoutSuccessTitle,
+      desc: l10n.logoutSuccessDesc,
       btnOkOnPress: () {},
       btnOkText: 'OK',
       autoHide: const Duration(seconds: 3),
@@ -100,18 +104,20 @@ class AppFeedback {
   }
 
   static Future<bool> confirmSignOut(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     var confirmed = false;
     await AwesomeDialog(
       context: context,
       dialogType: DialogType.question,
       animType: AnimType.scale,
-      title: 'Sign out?',
-      desc: 'You will be returned to the login screen.',
+      title: l10n.signOutConfirmTitle,
+      desc: l10n.signOutConfirmDesc,
       btnCancelOnPress: () {},
       btnOkOnPress: () => confirmed = true,
-      btnOkText: 'Sign Out',
-      btnCancelText: 'Cancel',
+      btnOkText: l10n.signOut,
+      btnCancelText: l10n.cancel,
     ).show();
     return confirmed;
   }
 }
+

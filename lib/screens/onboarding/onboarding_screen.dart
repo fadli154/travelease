@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../services/onboarding_prefs.dart';
 import '../../theme/app_colors.dart';
@@ -17,21 +18,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _controller = PageController();
   int _page = 0;
 
-  static const _pages = [
+  List<_OnboardingPageData> _getPages(AppLocalizations l10n) => [
     _OnboardingPageData(
       icon: Icons.explore_rounded,
-      title: 'Discover Amazing Destinations',
-      subtitle: 'Explore the best places across Indonesia with stunning photos and details.',
+      title: l10n.onboardingTitle1,
+      subtitle: l10n.onboardingSubtitle1,
     ),
     _OnboardingPageData(
       icon: Icons.map_rounded,
-      title: 'Plan Your Perfect Journey',
-      subtitle: 'Find locations on the map and navigate with Google Maps in one tap.',
+      title: l10n.onboardingTitle2,
+      subtitle: l10n.onboardingSubtitle2,
     ),
     _OnboardingPageData(
       icon: Icons.favorite_rounded,
-      title: 'Save Favorites and Share Reviews',
-      subtitle: 'Bookmark trips you love and help others with honest reviews.',
+      title: l10n.onboardingTitle3,
+      subtitle: l10n.onboardingSubtitle3,
     ),
   ];
 
@@ -48,8 +49,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
-    final isLast = _page == _pages.length - 1;
+    final pages = _getPages(l10n);
+    final isLast = _page == pages.length - 1;
 
     return Scaffold(
       body: SafeArea(
@@ -57,15 +60,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           children: [
             Align(
               alignment: Alignment.centerRight,
-              child: TextButton(onPressed: _finish, child: const Text('Skip')),
+              child: TextButton(onPressed: _finish, child: Text(l10n.skip)),
             ),
             Expanded(
               child: PageView.builder(
                 controller: _controller,
-                itemCount: _pages.length,
+                itemCount: pages.length,
                 onPageChanged: (i) => setState(() => _page = i),
                 itemBuilder: (context, index) {
-                  final data = _pages[index];
+                  final data = pages[index];
                   return Padding(
                     padding: const EdgeInsets.all(AppSpacing.xl),
                     child: Column(
@@ -106,7 +109,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(_pages.length, (i) {
+              children: List.generate(pages.length, (i) {
                 final active = i == _page;
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 250),
@@ -131,7 +134,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeOut,
                         ),
-                        child: const Text('Back'),
+                        child: Text(l10n.back),
                       ),
                     ),
                   if (_page > 0) const SizedBox(width: 12),
@@ -144,7 +147,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               duration: const Duration(milliseconds: 300),
                               curve: Curves.easeOut,
                             ),
-                      child: Text(isLast ? 'Get Started' : 'Next'),
+                      child: Text(isLast ? l10n.getStarted : l10n.next),
                     ),
                   ),
                 ],

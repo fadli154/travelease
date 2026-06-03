@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../widgets/auth_feedback.dart';
@@ -64,10 +65,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final auth = context.watch<AuthProvider>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create account'),
+        title: Text(l10n.createAccount),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -87,7 +89,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
-                            'Join TravelEase',
+                            l10n.joinTravelEase,
                             textAlign: TextAlign.center,
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.w800,
@@ -95,7 +97,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Save favorites and plan your next trip.',
+                            l10n.registerSubtitle,
                             textAlign: TextAlign.center,
                             style: theme.textTheme.bodyLarge?.copyWith(
                               color: colorScheme.onSurfaceVariant,
@@ -109,16 +111,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             textCapitalization: TextCapitalization.words,
                             textInputAction: TextInputAction.next,
                             enabled: !auth.isAuthActionLoading,
-                            decoration: const InputDecoration(
-                              labelText: 'Full name',
-                              prefixIcon: Icon(Icons.person_outline_rounded),
+                            decoration: InputDecoration(
+                              labelText: l10n.fullName,
+                              prefixIcon: const Icon(Icons.person_outline_rounded),
                             ),
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) {
-                                return 'Please enter your name';
+                                return l10n.nameRequired;
                               }
                               if (v.trim().length < 2) {
-                                return 'Name is too short';
+                                return l10n.nameTooShort;
                               }
                               return null;
                             },
@@ -132,16 +134,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
                             enabled: !auth.isAuthActionLoading,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              prefixIcon: Icon(Icons.email_outlined),
+                            decoration: InputDecoration(
+                              labelText: l10n.email,
+                              prefixIcon: const Icon(Icons.email_outlined),
                             ),
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) {
-                                return 'Please enter your email';
+                                return l10n.emailRequired;
                               }
                               if (!v.contains('@')) {
-                                return 'Please enter a valid email';
+                                return l10n.emailInvalid;
                               }
                               return null;
                             },
@@ -156,7 +158,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             textInputAction: TextInputAction.next,
                             enabled: !auth.isAuthActionLoading,
                             decoration: InputDecoration(
-                              labelText: 'Password',
+                              labelText: l10n.password,
                               prefixIcon: const Icon(Icons.lock_outline_rounded),
                               suffixIcon: IconButton(
                                 icon: Icon(
@@ -170,10 +172,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             validator: (v) {
                               if (v == null || v.isEmpty) {
-                                return 'Please enter a password';
+                                return l10n.passwordRequiredRegister;
                               }
                               if (v.length < 6) {
-                                return 'Password must be at least 6 characters';
+                                return l10n.passwordTooShort;
                               }
                               return null;
                             },
@@ -189,7 +191,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             enabled: !auth.isAuthActionLoading,
                             onFieldSubmitted: (_) => _register(),
                             decoration: InputDecoration(
-                              labelText: 'Confirm password',
+                              labelText: l10n.confirmPassword,
                               prefixIcon: const Icon(Icons.lock_outline_rounded),
                               suffixIcon: IconButton(
                                 icon: Icon(
@@ -203,7 +205,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             validator: (v) {
                               if (v != _passwordController.text) {
-                                return 'Passwords do not match';
+                                return l10n.passwordsDoNotMatch;
                               }
                               return null;
                             },
@@ -223,7 +225,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Text('Create Account'),
+                                : Text(l10n.createAccountBtn),
                           ),
 
                           const SizedBox(height: 24),
@@ -233,7 +235,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 12),
                                 child: Text(
-                                  'or',
+                                  l10n.or,
                                   style: theme.textTheme.labelMedium?.copyWith(
                                     color: colorScheme.onSurfaceVariant,
                                   ),
@@ -245,7 +247,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           const SizedBox(height: 16),
                           GoogleSignInButton(
                             onPressed: auth.isAuthActionLoading ? null : _signInWithGoogle,
-                            label: 'Sign up with Google',
+                            label: l10n.signUpWithGoogle,
                             isLoading: auth.isAuthActionLoading,
                           ),
                           const SizedBox(height: 12),
@@ -253,7 +255,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             onPressed: auth.isAuthActionLoading
                                 ? null
                                 : () => Navigator.of(context).pop(),
-                            child: const Text('Already have an account? Sign in'),
+                            child: Text(l10n.alreadyHaveAccount),
                           ),
                         ],
                       ),

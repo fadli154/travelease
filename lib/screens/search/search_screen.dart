@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../models/destination_model.dart';
 import '../../services/firebase_service.dart';
@@ -62,6 +63,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final firebase = widget.service ?? FirebaseService();
@@ -77,7 +79,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Search',
+                      l10n.search,
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -98,7 +100,7 @@ class _SearchScreenState extends State<SearchScreen> {
               child: SearchBar(
                 focusNode: _focusNode,
                 controller: _searchController,
-                hintText: 'Beach, temple, city, island...',
+                hintText: l10n.searchHint,
                 leading: Icon(Icons.search_rounded, color: colorScheme.primary),
                 trailing: _query.isEmpty && _selectedCategory == null
                     ? null
@@ -137,7 +139,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   if (snapshot.hasError) {
                     return EmptyState(
                       icon: Icons.cloud_off_rounded,
-                      title: 'Search unavailable',
+                      title: l10n.searchUnavailable,
                       subtitle: '${snapshot.error}',
                     );
                   }
@@ -160,7 +162,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               Padding(
                                 padding: const EdgeInsets.only(right: 8),
                                 child: FilterChip(
-                                  label: const Text('All'),
+                                  label: Text(l10n.all),
                                   selected: _selectedCategory == null,
                                   onSelected: (_) =>
                                       setState(() => _selectedCategory = null),
@@ -187,7 +189,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
                           child: Text(
-                            '${all.length} destinations · tap a category or search',
+                            l10n.destinationsSearchCount(all.length),
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: colorScheme.onSurfaceVariant,
                             ),
@@ -200,11 +202,11 @@ class _SearchScreenState extends State<SearchScreen> {
                                     ? Icons.search_off_rounded
                                     : Icons.travel_explore_rounded,
                                 title: hasFilter
-                                    ? 'No results found'
-                                    : 'Discover Indonesia',
+                                    ? l10n.noResults
+                                    : l10n.discoverIndonesia,
                                 subtitle: hasFilter
-                                    ? 'Try another keyword or clear filters.'
-                                    : 'Search by name, location, or pick a category above.',
+                                    ? l10n.noResultsSubtitle
+                                    : l10n.discoverIndonesiaSubtitle,
                                 compact: true,
                               )
                             : ListView.separated(

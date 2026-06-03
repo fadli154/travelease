@@ -91,24 +91,24 @@ class ProfileScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 8),
-                  _SectionLabel(label: 'Account'),
+                  _SectionLabel(label: l10n.account),
                   const SizedBox(height: 10),
                   _InfoTile(
                     icon: Icons.person_outline_rounded,
-                    title: 'Full Name',
+                    title: l10n.fullNameLabel,
                     subtitle: user.name,
                   ),
                   _InfoTile(
                     icon: Icons.email_outlined,
-                    title: 'Email',
+                    title: l10n.emailLabel,
                     subtitle: user.email,
                   ),
                   _InfoTile(
                     icon: Icons.shield_outlined,
-                    title: 'Role',
+                    title: l10n.roleLabel,
                     subtitle: user.role == UserRole.admin
-                        ? 'Administrator'
-                        : 'User',
+                        ? l10n.roleAdmin
+                        : l10n.roleUser,
                   ),
 
                   const SizedBox(height: 16),
@@ -121,7 +121,7 @@ class ProfileScreen extends StatelessWidget {
                       );
                     },
                     icon: const Icon(Icons.edit_outlined),
-                    label: const Text('Edit profile'),
+                    label: Text(l10n.editProfile),
                   ),
                   const SizedBox(height: 24),
                   _SectionLabel(label: l10n.preferences),
@@ -141,7 +141,7 @@ class ProfileScreen extends StatelessWidget {
                               ),
                               const SizedBox(width: 12),
                               Text(
-                                'Appearance',
+                                l10n.appearance,
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -205,7 +205,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 24),
-                  _SectionLabel(label: 'Session'),
+                  _SectionLabel(label: l10n.session),
                   const SizedBox(height: 10),
 
                   // Sign out
@@ -261,7 +261,7 @@ class _GuestProfileView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(l10n.profile),
         actions: [ThemeToggleButton(controller: themeController)],
       ),
       body: Center(
@@ -277,14 +277,14 @@ class _GuestProfileView extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                'Not signed in',
+                l10n.notSignedIn,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Sign in to save favorites, access your profile, and more.',
+                l10n.notSignedInSubtitle,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
@@ -298,7 +298,7 @@ class _GuestProfileView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        'Appearance',
+                        l10n.appearance,
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w700),
                       ),
@@ -391,7 +391,7 @@ class _RoleBadge extends StatelessWidget {
           ),
           const SizedBox(width: 5),
           Text(
-            isAdmin ? 'Administrator' : 'User',
+            isAdmin ? 'Admin' : 'User',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 12,

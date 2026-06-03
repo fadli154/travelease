@@ -39,5 +39,165 @@
   "ticketPrice": "Ticket Price",
   "imageUrl": "Image URL",
   "latitude": "Latitude",
-  "longitude": "Longitude"
+  "longitude": "Longitude",
+  "account": "Account",
+  "fullNameLabel": "Full Name",
+  "emailLabel": "Email",
+  "roleLabel": "Role",
+  "roleAdmin": "Administrator",
+  "roleUser": "User",
+  "appearance": "Appearance",
+  "session": "Session",
+  "profileUpdated": "Profile updated successfully",
+  "saveProfile": "Save profile",
+  "logout": "Logout",
+  "notSignedIn": "Not signed in",
+  "notSignedInSubtitle": "Sign in to save favorites, access your profile, and more.",
+  "demoAvatarNote": "Demo mode: avatar generated from your name.",
+
+  "signInSubtitle": "Sign in to continue exploring",
+  "emailRequired": "Please enter your email",
+  "emailInvalid": "Please enter a valid email",
+  "passwordRequired": "Please enter your password",
+  "continueAsGuest": "Continue as guest",
+  "orContinueWith": "or continue with",
+  "dontHaveAccount": "Don't have an account?",
+  "register": "Register",
+  "createAccount": "Create account",
+  "joinTravelEase": "Join TravelEase",
+  "registerSubtitle": "Save favorites and plan your next trip.",
+  "fullName": "Full name",
+  "nameRequired": "Please enter your name",
+  "nameTooShort": "Name is too short",
+  "passwordRequiredRegister": "Please enter a password",
+  "passwordTooShort": "Password must be at least 6 characters",
+  "confirmPassword": "Confirm password",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "createAccountBtn": "Create Account",
+  "or": "or",
+  "signUpWithGoogle": "Sign up with Google",
+  "alreadyHaveAccount": "Already have an account? Sign in",
+  "homeWelcomeTitle": "Where will you go next?",
+  "featured": "Featured",
+  "featuredSubtitle": "Top-rated picks for you",
+  "popular": "Popular",
+  "popularSubtitle": "Trending destinations across Indonesia",
+  "searchHint": "Beach, temple, city, island...",
+  "search": "Search",
+  "searchUnavailable": "Search unavailable",
+  "all": "All",
+  "destinationsSearchCount": "{count} destinations · tap a category or search",
+  "@destinationsSearchCount": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "noResults": "No results found",
+  "discoverIndonesia": "Discover Indonesia",
+  "noResultsSubtitle": "Try another keyword or clear filters.",
+  "discoverIndonesiaSubtitle": "Search by name, location, or pick a category above.",
+  "myFavorites": "My Favorites",
+  "signInToSaveFavorites": "Sign in to save favorites",
+  "signInToSaveFavoritesSubtitle": "Create a free account to bookmark your favorite destinations.",
+  "errorLoadFavorites": "Could not load favorites",
+  "favoritesEmpty": "Favorites Empty",
+  "favoritesEmptySubtitle": "Save places you love — tap the heart icon on any destination.",
+  "errorLoadDestinations": "Could not load destinations",
+  "errorLoadDestinationsSubtitle": "Check your internet connection or Firestore rules.",
+  "emptyDestinations": "No destinations yet",
+  "emptyDestinationsSubtitle": "Tap + Add to create your first destination.",
+  "error": "Error: {errorDetail}",
+  "@error": {
+    "placeholders": {
+      "errorDetail": {
+        "type": "String"
+      }
+    }
+  },
+  "helloName": "Hello, {name}",
+  "@helloName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsOverview": "TravelEase analytics overview",
+  "summary": "Summary",
+  "destinations": "Destinations",
+  "users": "Users",
+  "favorites": "Favorites",
+  "destinationsByCategory": "Destinations by category",
+  "barChart": "Bar chart",
+  "recentReviews": "Recent reviews",
+  "noReviewsYet": "No reviews yet.",
+  "noComment": "No comment",
+  "dismiss": "Dismiss",
+  "authErrorDetailFallback": "If this keeps happening, try email sign-in or contact support.",
+  "logoutSuccessTitle": "Logged out successfully",
+  "logoutSuccessDesc": "You have been logged out. See you next time!",
+  "signOutConfirmTitle": "Sign out?",
+  "signOutConfirmDesc": "You will be returned to the login screen.",
+  "skip": "Skip",
+  "back": "Back",
+  "getStarted": "Get Started",
+  "next": "Next",
+  "onboardingTitle1": "Discover Amazing Destinations",
+  "onboardingSubtitle1": "Explore the best places across Indonesia with stunning photos and details.",
+  "onboardingTitle2": "Plan Your Perfect Journey",
+  "onboardingSubtitle2": "Find locations on the map and navigate with Google Maps in one tap.",
+  "onboardingTitle3": "Save Favorites and Share Reviews",
+  "onboardingSubtitle3": "Bookmark trips you love and help others with honest reviews.",
+  "aiScanner": "AI Scanner",
+  "favoriteRemoved": "Favorite removed successfully",
+  "favoriteAdded": "Favorite added successfully",
+  "scrollDownReview": "Scroll down to write a review",
+  "maps": "Maps",
+  "freeTicket": "Free / N/A",
+  "noDescription": "No description available for this destination.",
+  "reviewsCount": "{count} reviews",
+  "@reviewsCount": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "noReviewsCount": "No reviews yet",
+  "couldNotOpenMap": "Could not open map: {error}",
+  "@couldNotOpenMap": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "scannerTitleActive": "Travel AI Scanner Active",
+  "scannerTitlePaused": "Travel AI Scanner Paused",
+  "objectsCount": "{count} objects",
+  "@objectsCount": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "voice": "Voice",
+  "speed": "Speed",
+  "conf": "Conf",
+  "voiceSpeedLabel": "Voice speed",
+  "voiceCooldownLabel": "Voice repetition interval",
+  "sensitivityLabel": "Sensitivity detection",
+  "startScan": "Start Scan",
+  "stopScan": "Stop Scan",
+  "detectedResult": "Detected Result",
+  "confidence": "Confidence",
+  "origin": "Origin",
+  "landmarkInfo": "Landmark Info",
+  "foodInfo": "Food Info",
+  "locationLabel": "Location",
+  "originLabel": "Origin",
+  "descriptionLabel": "Description"
 }

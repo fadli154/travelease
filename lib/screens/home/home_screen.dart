@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../models/destination_model.dart';
 import '../../services/firebase_service.dart';
@@ -27,6 +28,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -46,9 +48,9 @@ class HomeScreen extends StatelessWidget {
                 SliverFillRemaining(
                   child: EmptyState(
                     icon: Icons.cloud_off_rounded,
-                    title: 'Could not load destinations',
+                    title: l10n.errorLoadDestinations,
                     subtitle:
-                        'Check your internet connection or Firestore rules.\n${snapshot.error}',
+                        '${l10n.errorLoadDestinationsSubtitle}\n${snapshot.error}',
                   ),
                 ),
               ],
@@ -60,12 +62,11 @@ class HomeScreen extends StatelessWidget {
             return CustomScrollView(
               slivers: [
                 _HomeAppBar(themeController: themeController),
-                const SliverFillRemaining(
+                SliverFillRemaining(
                   child: EmptyState(
                     icon: Icons.explore_off_rounded,
-                    title: 'Destinations Empty',
-                    subtitle:
-                        'No travel spots to show yet. Admin can add destinations from the dashboard.',
+                    title: l10n.emptyDestinations,
+                    subtitle: l10n.emptyDestinationsSubtitle,
                   ),
                 ),
               ],
@@ -87,7 +88,7 @@ class HomeScreen extends StatelessWidget {
                     0,
                   ),
                   child: Text(
-                    'Where will you go next?',
+                    l10n.homeWelcomeTitle,
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w800,
                       letterSpacing: -0.5,
@@ -96,10 +97,10 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               SliverToBoxAdapter(child: HeroDestinationBanner(destinations: featured)),
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: SectionHeader(
-                  title: 'Featured',
-                  subtitle: 'Top-rated picks for you',
+                  title: l10n.featured,
+                  subtitle: l10n.featuredSubtitle,
                 ),
               ),
               SliverToBoxAdapter(
@@ -116,10 +117,10 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: SectionHeader(
-                  title: 'Popular',
-                  subtitle: 'Trending destinations across Indonesia',
+                  title: l10n.popular,
+                  subtitle: l10n.popularSubtitle,
                 ),
               ),
               SliverPadding(

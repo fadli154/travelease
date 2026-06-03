@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../models/destination_model.dart';
 import '../../services/firebase_service.dart';
@@ -25,6 +26,7 @@ class FavoritesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final firebase = service ?? FirebaseService();
@@ -33,7 +35,7 @@ class FavoritesScreen extends StatelessWidget {
     if (userId.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('My Favorites'),
+          title: Text(l10n.myFavorites),
           actions: [
             if (themeController != null)
               ThemeToggleButton(controller: themeController!),
@@ -52,14 +54,14 @@ class FavoritesScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Sign in to save favorites',
+                  l10n.signInToSaveFavorites,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Create a free account to bookmark your favorite destinations.',
+                  l10n.signInToSaveFavoritesSubtitle,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
@@ -75,7 +77,7 @@ class FavoritesScreen extends StatelessWidget {
                     );
                   },
                   icon: const Icon(Icons.login_rounded),
-                  label: const Text('Sign In'),
+                  label: Text(l10n.signIn),
                 ),
               ],
             ),
@@ -93,7 +95,7 @@ class FavoritesScreen extends StatelessWidget {
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
               title: Text(
-                'My Favorites',
+                l10n.myFavorites,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                   color: colorScheme.onPrimaryContainer,
@@ -131,7 +133,7 @@ class FavoritesScreen extends StatelessWidget {
                 return SliverFillRemaining(
                   child: EmptyState(
                     icon: Icons.cloud_off_rounded,
-                    title: 'Could not load favorites',
+                    title: l10n.errorLoadFavorites,
                     subtitle: '${snapshot.error}',
                   ),
                 );
@@ -139,12 +141,11 @@ class FavoritesScreen extends StatelessWidget {
 
               final favorites = snapshot.data ?? [];
               if (favorites.isEmpty) {
-                return const SliverFillRemaining(
+                return SliverFillRemaining(
                   child: EmptyState(
                     icon: Icons.favorite_border_rounded,
-                    title: 'Favorites Empty',
-                    subtitle:
-                        'Save places you love — tap the heart icon on any destination.',
+                    title: l10n.favoritesEmpty,
+                    subtitle: l10n.favoritesEmptySubtitle,
                   ),
                 );
               }

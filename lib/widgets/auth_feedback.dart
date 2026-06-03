@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 
 void showAuthFeedback(BuildContext context, AuthProvider auth) {
   if (auth.error == null) return;
 
+  final l10n = AppLocalizations.of(context)!;
   final messenger = ScaffoldMessenger.of(context);
   messenger.clearSnackBars();
   messenger.showSnackBar(
@@ -29,7 +31,7 @@ void showAuthFeedback(BuildContext context, AuthProvider auth) {
             Text(
               kDebugMode
                   ? auth.errorDetail!
-                  : 'If this keeps happening, try email sign-in or contact support.',
+                  : l10n.authErrorDetailFallback,
               style: TextStyle(
                 fontSize: 12,
                 color: Theme.of(context).colorScheme.onErrorContainer.withValues(alpha: 0.85),
@@ -39,10 +41,11 @@ void showAuthFeedback(BuildContext context, AuthProvider auth) {
         ],
       ),
       action: SnackBarAction(
-        label: 'Dismiss',
+        label: l10n.dismiss,
         textColor: Theme.of(context).colorScheme.onErrorContainer,
         onPressed: () => messenger.hideCurrentSnackBar(),
       ),
     ),
   );
 }
+
