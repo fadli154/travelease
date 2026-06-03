@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../services/firebase_service.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_theme_controller.dart';
+import '../../theme/language_controller.dart';
 import '../../utils/app_feedback.dart';
 import '../../widgets/theme_mode_selector.dart';
 import '../../widgets/user_avatar.dart';
@@ -76,6 +78,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     final auth = context.watch<AuthProvider>();
     final user = auth.currentUser!;
     final themeController = context.watch<AppThemeController>();
+    final languageController = context.watch<LanguageController>();
+    final l10n = AppLocalizations.of(context)!;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.screenH),
@@ -143,6 +147,44 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                   ),
                   const SizedBox(height: 12),
                   ThemeModeSelector(controller: themeController),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    l10n.language,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: SegmentedButton<Locale>(
+                      segments: [
+                        ButtonSegment<Locale>(
+                          value: const Locale('id'),
+                          label: Text(l10n.indonesian),
+                        ),
+                        ButtonSegment<Locale>(
+                          value: const Locale('en'),
+                          label: Text(l10n.english),
+                        ),
+                      ],
+                      selected: {languageController.locale},
+                      onSelectionChanged: (Set<Locale> selection) {
+                        languageController.setLocale(selection.first);
+                      },
+                      showSelectedIcon: false,
+                    ),
+                  ),
                 ],
               ),
             ),

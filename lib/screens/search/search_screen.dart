@@ -215,7 +215,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                   AppSpacing.screenBottom,
                                 ),
                                 itemCount: results.length,
-                                separatorBuilder: (_, __) =>
+                                separatorBuilder: (_, _) =>
                                     const SizedBox(height: AppSpacing.md),
                                 itemBuilder: (context, index) {
                                   return SearchResultTile(

@@ -43,7 +43,12 @@ class _AddDestinationScreenState extends State<AddDestinationScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Add destination')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.screenH),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenH,
+          AppSpacing.md,
+          AppSpacing.screenH,
+          AppSpacing.screenBottom + 24,
+        ),
         child: DestinationForm(
           isSaving: _isSaving,
           onSubmit: _onSubmit,

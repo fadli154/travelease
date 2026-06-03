@@ -49,12 +49,32 @@ class _DestinationMapCardState extends State<DestinationMapCard> {
 
   Future<void> _openGoogleMaps() async {
     final point = _point;
-    if (point == null) return;
+    if (point == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Coordinates are missing or invalid.')),
+        );
+      }
+      return;
+    }
     final uri = Uri.parse(
       'https://www.google.com/maps/search/?api=1&query=${point.latitude},${point.longitude}',
     );
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      if (await canLaunchUrl(uri)) {
+        final success = await launchUrl(uri, mode: LaunchMode.externalApplication);
+        if (!success) {
+          await launchUrl(uri, mode: LaunchMode.platformDefault);
+        }
+      } else {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open map: $e')),
+        );
+      }
     }
   }
 

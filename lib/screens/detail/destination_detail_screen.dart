@@ -40,7 +40,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _bindFavoriteStream();
   }
 
   @override
@@ -272,8 +271,21 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
         : Uri.parse(
             'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(destination.locationName)}',
           );
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      if (await canLaunchUrl(uri)) {
+        final success = await launchUrl(uri, mode: LaunchMode.externalApplication);
+        if (!success) {
+          await launchUrl(uri, mode: LaunchMode.platformDefault);
+        }
+      } else {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open map: $e')),
+        );
+      }
     }
   }
 

@@ -29,8 +29,8 @@ class UserAvatar extends StatelessWidget {
           width: radius * 2,
           height: radius * 2,
           fit: BoxFit.cover,
-          placeholder: (_, __) => _InitialsLabel(initials: initials, radius: radius),
-          errorWidget: (_, __, ___) => _InitialsLabel(initials: initials, radius: radius),
+          placeholder: (context, url) => _InitialsLabel(initials: initials, radius: radius),
+          errorWidget: (context, url, error) => _InitialsLabel(initials: initials, radius: radius),
         ),
       ),
     );

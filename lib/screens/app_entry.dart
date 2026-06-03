@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -67,6 +68,10 @@ class _AuthGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+
+    if (kDebugMode) {
+      debugPrint('[AppEntry/_AuthGate] build: isLoading=${auth.isLoading}, isLoggedIn=${auth.isLoggedIn}, isAdmin=${auth.isAdmin}, currentUser=${auth.currentUser?.email}');
+    }
 
     if (auth.isLoading) {
       return const Scaffold(

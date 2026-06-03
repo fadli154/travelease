@@ -17,6 +17,7 @@ class AuthProvider extends ChangeNotifier {
   bool _isAuthActionLoading = false;
   String? _error;
   String? _errorDetail;
+  bool _isDisposed = false;
 
   StreamSubscription<UserModel?>? _authSubscription;
 
@@ -43,9 +44,17 @@ class AuthProvider extends ChangeNotifier {
 
   /// Ignores stale stream events (e.g. after logout → login as another user).
   void _onAuthStreamUser(UserModel? user) {
+    if (_isDisposed) return;
+    
     final firebaseUid = _authService.currentUid;
+    if (kDebugMode) {
+      debugPrint('[AuthProvider] _onAuthStreamUser: firebaseUid=$firebaseUid, userUid=${user?.uid}');
+    }
 
     if (firebaseUid == null) {
+      if (kDebugMode) {
+        debugPrint('[AuthProvider] No firebaseUid -> clearing user');
+      }
       _currentUser = null;
       _isLoading = false;
       notifyListeners();
@@ -53,6 +62,9 @@ class AuthProvider extends ChangeNotifier {
     }
 
     if (user != null && user.uid == firebaseUid) {
+      if (kDebugMode) {
+        debugPrint('[AuthProvider] Stream user matches firebaseUid: ${user.email}');
+      }
       _currentUser = user;
       _isLoading = false;
       notifyListeners();
@@ -60,13 +72,50 @@ class AuthProvider extends ChangeNotifier {
     }
 
     if (_currentUser?.uid == firebaseUid) {
+      if (kDebugMode) {
+        debugPrint('[AuthProvider] Existing currentUser matches firebaseUid: ${_currentUser?.email}');
+      }
       _isLoading = false;
       notifyListeners();
       return;
     }
 
-    _isLoading = user == null;
-    notifyListeners();
+    if (kDebugMode) {
+      debugPrint('[AuthProvider] Fallthrough: firebaseUid=$firebaseUid. Resolving user directly.');
+    }
+    
+    _fetchAndResolveUser(firebaseUid);
+  }
+
+  Future<void> _fetchAndResolveUser(String firebaseUid) async {
+    try {
+      final user = await _authService.getCurrentUser();
+      if (_isDisposed) return;
+
+      if (_authService.currentUid == firebaseUid) {
+        if (user != null) {
+          if (kDebugMode) {
+            debugPrint('[AuthProvider] _fetchAndResolveUser resolved user: ${user.email}');
+          }
+          _currentUser = user;
+        } else {
+          if (kDebugMode) {
+            debugPrint('[AuthProvider] _fetchAndResolveUser resolved null user, signing out');
+          }
+          await _authService.signOut();
+          _currentUser = null;
+        }
+      }
+    } catch (e, st) {
+      if (kDebugMode) {
+        debugPrint('[AuthProvider] Error in _fetchAndResolveUser: $e\n$st');
+      }
+    } finally {
+      if (!_isDisposed) {
+        _isLoading = false;
+        notifyListeners();
+      }
+    }
   }
 
   Future<bool> signIn({
@@ -111,26 +160,33 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
+    if (_isDisposed) return;
     _isAuthActionLoading = true;
     _error = null;
     _errorDetail = null;
     notifyListeners();
     try {
       await _authService.signOut();
-      _currentUser = null;
+      if (!_isDisposed) {
+        _currentUser = null;
+      }
     } finally {
-      _isLoading = false;
-      _isAuthActionLoading = false;
-      notifyListeners();
+      if (!_isDisposed) {
+        _isLoading = false;
+        _isAuthActionLoading = false;
+        notifyListeners();
+      }
     }
   }
 
   void updateLocalUser(UserModel user) {
+    if (_isDisposed) return;
     _currentUser = user;
     notifyListeners();
   }
 
   void clearError() {
+    if (_isDisposed) return;
     _error = null;
     _errorDetail = null;
     notifyListeners();
@@ -140,32 +196,40 @@ class AuthProvider extends ChangeNotifier {
     Future<void> Function() action, {
     required String context,
   }) async {
+    if (_isDisposed) return false;
     _isAuthActionLoading = true;
     _error = null;
     _errorDetail = null;
     notifyListeners();
     try {
       await action();
-      _isLoading = false;
-      notifyListeners();
+      if (!_isDisposed) {
+        _isLoading = false;
+        notifyListeners();
+      }
       return _currentUser != null;
     } catch (e, st) {
       AuthErrorMapper.log(e, context: context);
       if (kDebugMode) {
         debugPrint('[$context] stack: $st');
       }
-      _error = AuthErrorMapper.userMessage(e);
-      _errorDetail = AuthErrorMapper.debugMessage(e);
-      notifyListeners();
+      if (!_isDisposed) {
+        _error = AuthErrorMapper.userMessage(e);
+        _errorDetail = AuthErrorMapper.debugMessage(e);
+        notifyListeners();
+      }
       return false;
     } finally {
-      _isAuthActionLoading = false;
-      notifyListeners();
+      if (!_isDisposed) {
+        _isAuthActionLoading = false;
+        notifyListeners();
+      }
     }
   }
 
   @override
   void dispose() {
+    _isDisposed = true;
     _authSubscription?.cancel();
     super.dispose();
   }

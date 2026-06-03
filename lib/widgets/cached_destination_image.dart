@@ -33,8 +33,8 @@ class CachedDestinationImage extends StatelessWidget {
     child = CachedNetworkImage(
         imageUrl: resolvedUrl,
         fit: fit,
-        placeholder: (_, __) => _shimmer(colorScheme),
-        errorWidget: (_, __, ___) => _placeholder(colorScheme),
+        placeholder: (context, url) => _shimmer(colorScheme),
+        errorWidget: (context, url, error) => _placeholder(colorScheme),
       );
 
     if (borderRadius != null) {

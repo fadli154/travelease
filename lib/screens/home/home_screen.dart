@@ -109,7 +109,7 @@ class HomeScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
                     scrollDirection: Axis.horizontal,
                     itemCount: featured.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.md),
+                    separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
                     itemBuilder: (context, index) {
                       return FeaturedDestinationCard(destination: featured[index]);
                     },
@@ -131,7 +131,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 sliver: SliverList.separated(
                   itemCount: popular.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.betweenCards),
+                  separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.betweenCards),
                   itemBuilder: (context, index) {
                     return DestinationCard(destination: popular[index]);
                   },

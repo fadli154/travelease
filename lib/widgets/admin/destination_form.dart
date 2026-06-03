@@ -85,15 +85,46 @@ class _DestinationFormState extends State<DestinationForm> {
     await widget.onSubmit(model);
   }
 
+  Widget _buildSectionHeader(BuildContext context, IconData icon, String title) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 20, color: colorScheme.primary),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Divider(height: 1),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final previewSeed = widget.initial?.id ?? _name.text.trim();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          _buildSectionHeader(context, Icons.image_outlined, 'Image'),
           ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: SizedBox(
@@ -108,8 +139,8 @@ class _DestinationFormState extends State<DestinationForm> {
           const SizedBox(height: AppSpacing.sm),
           Text(
             'Leave image URL empty to use a demo photo (Picsum). Firebase Storage is disabled for this demo build.',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -123,7 +154,8 @@ class _DestinationFormState extends State<DestinationForm> {
             ),
             onChanged: (_) => setState(() {}),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          
+          _buildSectionHeader(context, Icons.info_outline, 'Basic Info'),
           TextFormField(
             controller: _name,
             enabled: !widget.isSaving,
@@ -133,50 +165,6 @@ class _DestinationFormState extends State<DestinationForm> {
             ),
             validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
             onChanged: (_) => setState(() {}),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          TextFormField(
-            controller: _location,
-            enabled: !widget.isSaving,
-            decoration: const InputDecoration(
-              labelText: 'Location name',
-              prefixIcon: Icon(Icons.location_on_outlined),
-            ),
-            validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _latitude,
-                  enabled: !widget.isSaving,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                    signed: true,
-                  ),
-                  decoration: const InputDecoration(
-                    labelText: 'Latitude',
-                    prefixIcon: Icon(Icons.my_location_outlined),
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: TextFormField(
-                  controller: _longitude,
-                  enabled: !widget.isSaving,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                    signed: true,
-                  ),
-                  decoration: const InputDecoration(
-                    labelText: 'Longitude',
-                    prefixIcon: Icon(Icons.explore_outlined),
-                  ),
-                ),
-              ),
-            ],
           ),
           const SizedBox(height: AppSpacing.md),
           TextFormField(
@@ -198,7 +186,76 @@ class _DestinationFormState extends State<DestinationForm> {
               prefixIcon: Icon(Icons.payments_outlined),
             ),
           ),
+          
+          _buildSectionHeader(context, Icons.location_on_outlined, 'Location'),
+          TextFormField(
+            controller: _location,
+            enabled: !widget.isSaving,
+            decoration: const InputDecoration(
+              labelText: 'Location name',
+              prefixIcon: Icon(Icons.location_on_outlined),
+            ),
+            validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+          ),
           const SizedBox(height: AppSpacing.md),
+          Card(
+            color: colorScheme.surfaceContainerLow,
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Coordinates (Optional)',
+                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Used to show the destination on map. If empty, the location name will be geocoded.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _latitude,
+                          enabled: !widget.isSaving,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                            signed: true,
+                          ),
+                          decoration: const InputDecoration(
+                            labelText: 'Latitude',
+                            prefixIcon: Icon(Icons.my_location_outlined),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _longitude,
+                          enabled: !widget.isSaving,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                            signed: true,
+                          ),
+                          decoration: const InputDecoration(
+                            labelText: 'Longitude',
+                            prefixIcon: Icon(Icons.explore_outlined),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          _buildSectionHeader(context, Icons.description_outlined, 'Details'),
           TextFormField(
             controller: _description,
             enabled: !widget.isSaving,

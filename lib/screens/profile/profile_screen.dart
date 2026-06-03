@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_theme_controller.dart';
+import '../../theme/language_controller.dart';
 import '../../utils/app_feedback.dart';
 import '../../widgets/theme_mode_selector.dart';
 import '../../widgets/theme_toggle_button.dart';
@@ -22,6 +24,8 @@ class ProfileScreen extends StatelessWidget {
     final auth = context.watch<AuthProvider>();
     final user = auth.currentUser;
     final themeController = context.watch<AppThemeController>();
+    final languageController = context.watch<LanguageController>();
+    final l10n = AppLocalizations.of(context)!;
 
     if (user == null) {
       return _GuestProfileView(themeController: themeController);
@@ -120,7 +124,7 @@ class ProfileScreen extends StatelessWidget {
                     label: const Text('Edit profile'),
                   ),
                   const SizedBox(height: 24),
-                  _SectionLabel(label: 'Preferences'),
+                  _SectionLabel(label: l10n.preferences),
                   const SizedBox(height: 10),
 
                   Card(
@@ -151,6 +155,55 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
 
+                  const SizedBox(height: 12),
+
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.language_outlined,
+                                color: colorScheme.primary,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                l10n.language,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            child: SegmentedButton<Locale>(
+                              segments: [
+                                ButtonSegment<Locale>(
+                                  value: const Locale('id'),
+                                  label: Text(l10n.indonesian),
+                                ),
+                                ButtonSegment<Locale>(
+                                  value: const Locale('en'),
+                                  label: Text(l10n.english),
+                                ),
+                              ],
+                              selected: {languageController.locale},
+                              onSelectionChanged: (Set<Locale> selection) {
+                                languageController.setLocale(selection.first);
+                              },
+                              showSelectedIcon: false,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 24),
                   _SectionLabel(label: 'Session'),
                   const SizedBox(height: 10),
@@ -163,7 +216,7 @@ class ProfileScreen extends StatelessWidget {
                         color: colorScheme.error,
                       ),
                       title: Text(
-                        'Sign Out',
+                        l10n.signOut,
                         style: TextStyle(
                           color: colorScheme.error,
                           fontWeight: FontWeight.w600,
@@ -203,6 +256,8 @@ class _GuestProfileView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final languageController = context.watch<LanguageController>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -210,7 +265,7 @@ class _GuestProfileView extends StatelessWidget {
         actions: [ThemeToggleButton(controller: themeController)],
       ),
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -253,6 +308,43 @@ class _GuestProfileView extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        l10n.language,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: SegmentedButton<Locale>(
+                          segments: [
+                            ButtonSegment<Locale>(
+                              value: const Locale('id'),
+                              label: Text(l10n.indonesian),
+                            ),
+                            ButtonSegment<Locale>(
+                              value: const Locale('en'),
+                              label: Text(l10n.english),
+                            ),
+                          ],
+                          selected: {languageController.locale},
+                          onSelectionChanged: (Set<Locale> selection) {
+                            languageController.setLocale(selection.first);
+                          },
+                          showSelectedIcon: false,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 28),
               FilledButton.icon(
                 onPressed: () {
@@ -263,7 +355,7 @@ class _GuestProfileView extends StatelessWidget {
                   );
                 },
                 icon: const Icon(Icons.login_rounded),
-                label: const Text('Sign In'),
+                label: Text(l10n.signIn),
               ),
             ],
           ),

@@ -57,8 +57,8 @@ class HomeScreenSkeleton extends StatelessWidget {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: 3,
-                    separatorBuilder: (_, __) => const SizedBox(width: 14),
-                    itemBuilder: (_, __) => const SkeletonBox(width: 180, height: 220, borderRadius: 20),
+                    separatorBuilder: (_, _) => const SizedBox(width: 14),
+                    itemBuilder: (_, _) => const SkeletonBox(width: 180, height: 220, borderRadius: 20),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -95,8 +95,8 @@ class DestinationListSkeleton extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: itemCount,
-      separatorBuilder: (_, __) => const SizedBox(height: 14),
-      itemBuilder: (_, __) => SkeletonBox(
+      separatorBuilder: (_, _) => const SizedBox(height: 14),
+      itemBuilder: (_, _) => SkeletonBox(
         width: cardWidth,
         height: 280,
         borderRadius: 20,
@@ -115,8 +115,8 @@ class SearchResultsSkeleton extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: 5,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (_, __) => SkeletonBox(
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      itemBuilder: (_, _) => SkeletonBox(
         width: tileWidth,
         height: 88,
         borderRadius: 16,

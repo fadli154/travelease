@@ -28,11 +28,30 @@ class AuthService {
 
   Stream<UserModel?> get authStateChanges {
     return _auth.authStateChanges().asyncMap((firebaseUser) async {
+      if (kDebugMode) {
+        debugPrint('[AuthService] authStateChanges event: firebaseUser=${firebaseUser?.uid}');
+      }
       if (firebaseUser == null) return null;
       final uid = firebaseUser.uid;
       final model = await _fetchUserModel(uid);
-      if (_auth.currentUser?.uid != uid) return null;
+      if (kDebugMode) {
+        debugPrint('[AuthService] authStateChanges fetched model: ${model?.email} (uid: ${model?.uid})');
+      }
+      if (_auth.currentUser?.uid != uid) {
+        if (kDebugMode) {
+          debugPrint('[AuthService] authStateChanges uid mismatch: currentUid=${_auth.currentUser?.uid}, eventUid=$uid');
+        }
+        return null;
+      }
       return model;
+    });
+  }
+
+  Stream<UserModel?> get userChanges {
+    return _auth.userChanges().asyncMap((firebaseUser) async {
+      if (firebaseUser == null) return null;
+      final uid = firebaseUser.uid;
+      return _fetchUserModel(uid);
     });
   }
 

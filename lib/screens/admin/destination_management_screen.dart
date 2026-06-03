@@ -113,7 +113,7 @@ class _DestinationManagementScreenState
         return ListView.separated(
           padding: const EdgeInsets.all(AppSpacing.screenH),
           itemCount: list.length,
-          separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.betweenCards),
+          separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.betweenCards),
           itemBuilder: (context, index) {
             final d = list[index];
             return Card(
@@ -122,12 +122,17 @@ class _DestinationManagementScreenState
                 onTap: () => _openEdit(d),
                 child: Row(
                   children: [
-                    SizedBox(
-                      width: 96,
-                      height: 96,
-                      child: CachedDestinationImage(
-                        imageUrl: d.imageUrl,
-                        imageSeed: d.id,
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: 96,
+                        maxHeight: 96,
+                      ),
+                      child: AspectRatio(
+                        aspectRatio: 1.0,
+                        child: CachedDestinationImage(
+                          imageUrl: d.imageUrl,
+                          imageSeed: d.id,
+                        ),
                       ),
                     ),
                     Expanded(

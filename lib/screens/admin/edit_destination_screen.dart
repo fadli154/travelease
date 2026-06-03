@@ -49,7 +49,12 @@ class _EditDestinationScreenState extends State<EditDestinationScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Edit destination')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.screenH),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenH,
+          AppSpacing.md,
+          AppSpacing.screenH,
+          AppSpacing.screenBottom + 24,
+        ),
         child: DestinationForm(
           initial: widget.destination,
           isSaving: _isSaving,
