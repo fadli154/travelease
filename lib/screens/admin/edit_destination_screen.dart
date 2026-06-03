@@ -1,10 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 
 import '../../models/destination_model.dart';
 import '../../services/firebase_service.dart';
 import '../../theme/app_spacing.dart';
+import '../../utils/app_feedback.dart';
 import '../../widgets/admin/destination_form.dart';
 
 class EditDestinationScreen extends StatefulWidget {
@@ -26,27 +25,19 @@ class _EditDestinationScreenState extends State<EditDestinationScreen> {
 
   FirebaseService get _service => widget.service ?? FirebaseService();
 
-  Future<void> _onSubmit(DestinationModel model, File? imageFile) async {
+  Future<void> _onSubmit(DestinationModel model) async {
     setState(() => _isSaving = true);
     try {
-      var updated = model.copyWith(id: widget.destination.id);
-      if (imageFile != null) {
-        final url = await _service.uploadDestinationImage(
-          imageFile: imageFile,
-          destinationId: widget.destination.id,
-        );
-        updated = updated.copyWith(imageUrl: url);
-      }
+      final updated = model.copyWith(id: widget.destination.id);
       await _service.updateDestination(updated);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Destination updated')),
-      );
+      AppFeedback.success(context, 'Destination updated successfully');
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update: $e')),
+      AppFeedback.error(
+        context,
+        AppFeedback.actionError(e, 'Update destination'),
       );
     } finally {
       if (mounted) setState(() => _isSaving = false);

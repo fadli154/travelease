@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
+import '../../widgets/auth_feedback.dart';
+import '../../widgets/google_sign_in_button.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -34,15 +36,22 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (!mounted) return;
-    if (!success && auth.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.error!),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+    if (success) {
+      auth.clearError();
+    } else {
+      showAuthFeedback(context, auth);
     }
-    // Navigation is handled by _AuthGate in AppEntry reacting to auth state.
+  }
+
+  Future<void> _signInWithGoogle() async {
+    final auth = context.read<AuthProvider>();
+    final success = await auth.signInWithGoogle();
+    if (!mounted) return;
+    if (success) {
+      auth.clearError();
+    } else {
+      showAuthFeedback(context, auth);
+    }
   }
 
   @override
@@ -123,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
-                            enabled: !auth.isLoading,
+                            enabled: !auth.isAuthActionLoading,
                             decoration: const InputDecoration(
                               labelText: 'Email',
                               prefixIcon: Icon(Icons.email_outlined),
@@ -146,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             controller: _passwordController,
                             obscureText: _obscurePassword,
                             textInputAction: TextInputAction.done,
-                            enabled: !auth.isLoading,
+                            enabled: !auth.isAuthActionLoading,
                             onFieldSubmitted: (_) => _signIn(),
                             decoration: InputDecoration(
                               labelText: 'Password',
@@ -169,12 +178,18 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                           ),
 
-                          const SizedBox(height: 28),
+                          const SizedBox(height: 32),
 
                           // ── Sign In button ─────────────────────────────────
                           FilledButton(
-                            onPressed: auth.isLoading ? null : _signIn,
-                            child: auth.isLoading
+                            onPressed: auth.isAuthActionLoading ? null : _signIn,
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size.fromHeight(52),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: auth.isAuthActionLoading
                                 ? const SizedBox(
                                     height: 20,
                                     width: 20,
@@ -186,17 +201,49 @@ class _LoginScreenState extends State<LoginScreen> {
                                 : const Text('Sign In'),
                           ),
 
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 14),
 
                           OutlinedButton(
-                            onPressed: auth.isLoading
+                            onPressed: auth.isAuthActionLoading
                                 ? null
                                 : () => Navigator.of(context)
                                     .pushReplacementNamed('/guest'),
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(48),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
                             child: const Text('Continue as guest'),
                           ),
 
                           const SizedBox(height: 28),
+
+                          Row(
+                            children: [
+                              Expanded(child: Divider(color: colorScheme.outlineVariant)),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  'or continue with',
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              Expanded(child: Divider(color: colorScheme.outlineVariant)),
+                            ],
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          GoogleSignInButton(
+                            onPressed: auth.isAuthActionLoading ? null : _signInWithGoogle,
+                            isLoading: auth.isAuthActionLoading,
+                          ),
+
+                          const SizedBox(height: 32),
 
                           // ── Register link ──────────────────────────────────
                           Row(
@@ -209,7 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               TextButton(
-                                onPressed: auth.isLoading
+                                onPressed: auth.isAuthActionLoading
                                     ? null
                                     : () {
                                         Navigator.of(context).push(

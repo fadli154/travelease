@@ -1,21 +1,16 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 import '../core/constants/firestore_collections.dart';
 import '../models/destination_model.dart';
 import '../models/favorite_model.dart';
+import '../models/review_model.dart';
+import '../utils/image_helper.dart';
 
 class FirebaseService {
-  FirebaseService({
-    FirebaseFirestore? firestore,
-    FirebaseStorage? storage,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _storage = storage ?? FirebaseStorage.instance;
+  FirebaseService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
 
   CollectionReference<Map<String, dynamic>> get _destinations =>
       _firestore.collection(FirestoreCollections.destinations);
@@ -25,6 +20,9 @@ class FirebaseService {
 
   CollectionReference<Map<String, dynamic>> get _favorites =>
       _firestore.collection(FirestoreCollections.favorites);
+
+  CollectionReference<Map<String, dynamic>> get _reviews =>
+      _firestore.collection(FirestoreCollections.reviews);
 
   // ── Destinations ─────────────────────────────────────────────────────────────
 
@@ -45,15 +43,21 @@ class FirebaseService {
   }
 
   Future<String> addDestination(DestinationModel destination) async {
-    final data = destination.toMap();
-    data['createdAt'] = FieldValue.serverTimestamp();
+    final data = Map<String, dynamic>.from(destination.toMap());
+    data['imageUrl'] = ImageHelper.destinationDisplayUrl(
+      destination.imageUrl,
+      seed: destination.name,
+    );
     final ref = await _destinations.add(data);
     return ref.id;
   }
 
   Future<void> updateDestination(DestinationModel destination) async {
-    final data = destination.toMap();
-    data.remove('createdAt');
+    final data = destination.toMap(includeCreatedAt: false);
+    data['imageUrl'] = ImageHelper.destinationDisplayUrl(
+      destination.imageUrl,
+      seed: destination.id.isNotEmpty ? destination.id : destination.name,
+    );
     await _destinations.doc(destination.id).update(data);
   }
 
@@ -61,26 +65,19 @@ class FirebaseService {
     await _destinations.doc(id).delete();
   }
 
-  Future<String> uploadDestinationImage({
-    required File imageFile,
-    required String destinationId,
+  Future<void> updateUserProfile({
+    required String userId,
+    String? name,
+    String? photoUrl,
   }) async {
-    final ref = _storage
-        .ref()
-        .child('destinations')
-        .child('$destinationId.jpg');
-    final task = await ref.putFile(
-      imageFile,
-      SettableMetadata(contentType: 'image/jpeg'),
-    );
-    return task.ref.getDownloadURL();
+    final data = <String, dynamic>{};
+    if (name != null) data['name'] = name;
+    if (photoUrl != null) data['photoUrl'] = photoUrl;
+    if (data.isEmpty) return;
+    await _users.doc(userId).update(data);
   }
 
-  Future<void> updateDestinationImageUrl(String id, String imageUrl) async {
-    await _destinations.doc(id).update({'imageUrl': imageUrl});
-  }
-
-  // ── Favorites (userId + destinationId) ─────────────────────────────────────
+  // ── Favorites ────────────────────────────────────────────────────────────────
 
   String _favoriteDocId(String userId, String destinationId) =>
       FavoriteModel.docId(userId, destinationId);
@@ -95,20 +92,19 @@ class FirebaseService {
 
   Stream<List<FavoriteModel>> getFavorites(String userId) {
     if (userId.isEmpty) return Stream.value([]);
-    return _favorites
-        .where('userId', isEqualTo: userId)
-        .snapshots()
-        .map((snapshot) {
-      final favorites = snapshot.docs
-          .map((doc) => FavoriteModel.fromMap(id: doc.id, data: doc.data()))
-          .toList();
-      favorites.sort((a, b) {
-        final aTime = a.createdAt?.millisecondsSinceEpoch ?? 0;
-        final bTime = b.createdAt?.millisecondsSinceEpoch ?? 0;
-        return bTime.compareTo(aTime);
-      });
-      return favorites;
-    });
+    return _favorites.where('userId', isEqualTo: userId).snapshots().map(
+      (snapshot) {
+        final favorites = snapshot.docs
+            .map((doc) => FavoriteModel.fromMap(id: doc.id, data: doc.data()))
+            .toList();
+        favorites.sort((a, b) {
+          final aTime = a.createdAt?.millisecondsSinceEpoch ?? 0;
+          final bTime = b.createdAt?.millisecondsSinceEpoch ?? 0;
+          return bTime.compareTo(aTime);
+        });
+        return favorites;
+      },
+    );
   }
 
   Stream<List<DestinationModel>> getFavoriteDestinations(String userId) {
@@ -147,6 +143,73 @@ class FirebaseService {
     }
   }
 
+  // ── Reviews ──────────────────────────────────────────────────────────────────
+
+  Stream<List<ReviewModel>> getReviewsForDestination(String destinationId) {
+    return _reviews
+        .where('destinationId', isEqualTo: destinationId)
+        .snapshots()
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => ReviewModel.fromMap(id: doc.id, data: doc.data()))
+          .toList();
+      list.sort((a, b) {
+        final aTime = a.createdAt?.millisecondsSinceEpoch ?? 0;
+        final bTime = b.createdAt?.millisecondsSinceEpoch ?? 0;
+        return bTime.compareTo(aTime);
+      });
+      return list;
+    });
+  }
+
+  Future<String> addReview(ReviewModel review) async {
+    final ref = await _reviews.add(review.toMap());
+    await recalculateDestinationRating(review.destinationId);
+    return ref.id;
+  }
+
+  Future<void> updateReview(ReviewModel review) async {
+    await _reviews.doc(review.id).update(review.toUpdateMap());
+    await recalculateDestinationRating(review.destinationId);
+  }
+
+  Future<void> deleteReview({
+    required String reviewId,
+    required String destinationId,
+  }) async {
+    await _reviews.doc(reviewId).delete();
+    await recalculateDestinationRating(destinationId);
+  }
+
+  Future<void> recalculateDestinationRating(String destinationId) async {
+    final snapshot = await _reviews
+        .where('destinationId', isEqualTo: destinationId)
+        .get();
+
+    if (snapshot.docs.isEmpty) {
+      await _destinations.doc(destinationId).update({
+        'averageRating': 0,
+        'totalReviews': 0,
+        'rating': 0,
+      });
+      return;
+    }
+
+    var sum = 0.0;
+    for (final doc in snapshot.docs) {
+      final r = doc.data()['rating'];
+      if (r is num) sum += r.toDouble();
+    }
+    final count = snapshot.docs.length;
+    final average = sum / count;
+
+    await _destinations.doc(destinationId).update({
+      'averageRating': average,
+      'totalReviews': count,
+      'rating': average,
+    });
+  }
+
   // ── Admin stats ──────────────────────────────────────────────────────────────
 
   Future<int> getDestinationCount() async {
@@ -157,5 +220,42 @@ class FirebaseService {
   Future<int> getUserCount() async {
     final snapshot = await _users.count().get();
     return snapshot.count ?? 0;
+  }
+
+  Future<int> getReviewCount() async {
+    final snapshot = await _reviews.count().get();
+    return snapshot.count ?? 0;
+  }
+
+  Future<int> getFavoriteCount() async {
+    final snapshot = await _favorites.count().get();
+    return snapshot.count ?? 0;
+  }
+
+  /// Category name → destination count (for admin charts).
+  Future<Map<String, int>> getCategoryDistribution() async {
+    final snapshot = await _destinations.get();
+    final counts = <String, int>{};
+    for (final doc in snapshot.docs) {
+      final raw = doc.data()['category'];
+      final category = raw is String && raw.trim().isNotEmpty
+          ? raw.trim()
+          : 'Other';
+      counts[category] = (counts[category] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  Future<List<ReviewModel>> getRecentReviews({int limit = 8}) async {
+    final snapshot = await _reviews.get();
+    final list = snapshot.docs
+        .map((doc) => ReviewModel.fromMap(id: doc.id, data: doc.data()))
+        .toList();
+    list.sort((a, b) {
+      final aTime = a.createdAt?.millisecondsSinceEpoch ?? 0;
+      final bTime = b.createdAt?.millisecondsSinceEpoch ?? 0;
+      return bTime.compareTo(aTime);
+    });
+    return list.take(limit).toList();
   }
 }

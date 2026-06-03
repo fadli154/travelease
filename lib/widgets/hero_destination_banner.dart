@@ -122,7 +122,10 @@ class _HeroSlide extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                CachedDestinationImage(imageUrl: destination.imageUrl),
+                CachedDestinationImage(
+                  imageUrl: destination.imageUrl,
+                  imageSeed: destination.id,
+                ),
                 DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -183,7 +186,7 @@ class _HeroSlide extends StatelessWidget {
                           const SizedBox(width: 8),
                           Icon(Icons.star_rounded, color: Colors.amber[400], size: 20),
                           Text(
-                            destination.rating.toStringAsFixed(1),
+                            destination.displayRating.toStringAsFixed(1),
                             style: theme.textTheme.titleSmall?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,

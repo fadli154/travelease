@@ -12,7 +12,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  final themeController = AppThemeController();
+  final themeController = await AppThemeController.create();
   final authProvider = AuthProvider();
   authProvider.listenToAuthChanges();
 

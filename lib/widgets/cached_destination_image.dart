@@ -2,16 +2,20 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../utils/image_helper.dart';
+
 class CachedDestinationImage extends StatelessWidget {
   const CachedDestinationImage({
     super.key,
     required this.imageUrl,
+    this.imageSeed = 'travel',
     this.fit = BoxFit.cover,
     this.borderRadius,
     this.placeholderIcon = Icons.landscape_rounded,
   });
 
   final String imageUrl;
+  final String imageSeed;
   final BoxFit fit;
   final BorderRadius? borderRadius;
   final IconData placeholderIcon;
@@ -20,17 +24,18 @@ class CachedDestinationImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    final resolvedUrl = ImageHelper.destinationDisplayUrl(
+      imageUrl,
+      seed: imageSeed,
+    );
+
     Widget child;
-    if (imageUrl.isEmpty) {
-      child = _placeholder(colorScheme);
-    } else {
-      child = CachedNetworkImage(
-        imageUrl: imageUrl,
+    child = CachedNetworkImage(
+        imageUrl: resolvedUrl,
         fit: fit,
         placeholder: (_, __) => _shimmer(colorScheme),
-        errorWidget: (_, __, ___) => _error(colorScheme),
+        errorWidget: (_, __, ___) => _placeholder(colorScheme),
       );
-    }
 
     if (borderRadius != null) {
       child = ClipRRect(borderRadius: borderRadius!, child: child);
@@ -64,16 +69,4 @@ class CachedDestinationImage extends StatelessWidget {
     );
   }
 
-  Widget _error(ColorScheme colorScheme) {
-    return ColoredBox(
-      color: colorScheme.surfaceContainerHighest,
-      child: Center(
-        child: Icon(
-          Icons.broken_image_outlined,
-          size: 40,
-          color: colorScheme.onSurfaceVariant,
-        ),
-      ),
-    );
-  }
 }

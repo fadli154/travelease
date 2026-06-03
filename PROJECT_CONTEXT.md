@@ -1,138 +1,370 @@
-# TravelEase - Mobile Travel App (Flutter + Firebase)
+# TravelEase - Project Context
 
-## 🚀 Project Overview
-TravelEase adalah aplikasi mobile berbasis Flutter yang menyediakan informasi wisata di Indonesia.
-Aplikasi ini ditujukan untuk tugas kuliah dengan fokus pada UI modern, pengalaman pengguna yang baik, dan integrasi Firebase Firestore sebagai backend utama.
+## Project Overview
 
-Tujuan utama aplikasi:
-- Menampilkan daftar destinasi wisata Indonesia
-- Memberikan detail informasi wisata
-- Memungkinkan pengguna menyimpan destinasi favorit
-- Menggunakan Firebase Firestore sebagai database cloud
+TravelEase adalah aplikasi mobile informasi wisata Indonesia yang dibangun menggunakan Flutter dan Firebase.
 
----
+Aplikasi ini bertujuan membantu pengguna menemukan destinasi wisata, melihat informasi lengkap wisata, menyimpan destinasi favorit, memberikan ulasan, dan mendapatkan pengalaman eksplorasi wisata yang modern.
 
-## 🎯 MVP (Minimum Viable Product)
+Aplikasi memiliki dua role:
 
-Aplikasi ini hanya fokus pada fitur inti berikut:
+* User
+* Admin
 
-### 1. Home Screen
-- Menampilkan daftar destinasi wisata populer
-- UI berbentuk card modern (image + nama + lokasi + rating)
-- Search bar di bagian atas
+Project ini merupakan tugas kuliah sehingga fokus utama adalah:
 
-### 2. Search Feature
-- Pencarian destinasi berdasarkan nama
-- Filter sederhana (opsional: kategori wisata)
-
-### 3. Destination Detail Screen
-- Gambar destinasi
-- Nama tempat
-- Lokasi
-- Deskripsi
-- Rating
-- Tombol "Add to Favorite"
-
-### 4. Favorite Screen
-- Menampilkan destinasi yang disimpan user
-- Data tersimpan di Firebase Firestore
-
-### 5. Simple Navigation
-- Bottom Navigation Bar:
-  - Home
-  - Search
-  - Favorites
+* UI modern dan profesional
+* Fitur yang berjalan dengan baik
+* Firebase sebagai backend utama
+* Mudah dipresentasikan
 
 ---
 
-## 🔥 Firebase Integration
+# Technology Stack
 
-Gunakan Firebase sebagai backend utama:
+Frontend:
 
-### Firestore Collections:
+* Flutter
+* Dart
+* Material 3
 
-#### Collection: `destinations`
+Backend:
+
+* Firebase Authentication
+* Google Sign In
+* Cloud Firestore
+* Firebase Storage
+
+State Management:
+
+* Provider
+
+Maps:
+
+* Google Maps Flutter
+
+---
+
+# User Roles
+
+## User
+
+User dapat:
+
+* Register
+
+* Login menggunakan Email dan Password
+
+* Login menggunakan Google
+
+* Logout
+
+* Melihat daftar destinasi wisata
+
+* Mencari destinasi wisata
+
+* Melihat detail destinasi
+
+* Menyimpan destinasi favorit
+
+* Menghapus destinasi favorit
+
+* Memberikan rating
+
+* Memberikan ulasan
+
+* Mengunggah foto ulasan
+
+* Mengedit ulasan sendiri
+
+* Menghapus ulasan sendiri
+
+* Melihat lokasi wisata pada Google Maps
+
+* Mengubah profil
+
+* Mengubah foto profil
+
+---
+
+## Admin
+
+Admin dapat:
+
+* Login
+
+* Logout
+
+* Melihat seluruh data destinasi
+
+* Menambah destinasi wisata
+
+* Mengedit destinasi wisata
+
+* Menghapus destinasi wisata
+
+* Mengelola lokasi wisata
+
+* Mengubah koordinat latitude dan longitude
+
+* Menghapus ulasan pengguna
+
+* Mengakses dashboard admin
+
+* Mengakses halaman profil admin
+
+---
+
+# Firestore Database Structure
+
+## Collection: users
+
+Document ID = Firebase Auth UID
+
 Fields:
-- id (string)
-- name (string)
-- location (string)
-- description (string)
-- imageUrl (string)
-- rating (double)
-- category (string)
 
-#### Collection: `favorites`
+* uid
+* name
+* email
+* photoUrl
+* role
+* createdAt
+
+Role values:
+
+* admin
+* user
+
+---
+
+## Collection: destinations
+
 Fields:
-- userId (string)
-- destinationId (string)
-- createdAt (timestamp, optional)
 
-#### Collection: `users`
+* id
+* name
+* description
+* imageUrl
+* locationName
+* latitude
+* longitude
+* category
+* ticketPrice
+* averageRating
+* totalReviews
+* createdAt
+
+---
+
+## Collection: favorites
+
 Fields:
-- uid (string)
-- name (string)
-- email (string)
-- role (string: `admin` | `user`)
+
+* userId
+* destinationId
+* createdAt
 
 ---
 
-## 🧠 Tech Stack
+## Collection: reviews
 
-- Flutter (latest stable)
-- Dart
-- Firebase Firestore
-- Firebase Core
-- Material 3 Design
+Fields:
 
----
-
-## 🎨 UI/UX Direction
-
-- Clean & modern design
-- Inspired by Traveloka / Airbnb style UI
-- Card-based layout
-- Soft colors (white, green, blue tone)
-- Mobile-first responsive design
-- Smooth navigation
+* id
+* destinationId
+* userId
+* userName
+* userPhoto
+* rating
+* comment
+* imageUrl
+* createdAt
+* updatedAt
 
 ---
 
-## 🧱 Architecture (Simple Clean Structure)
+# Rating System
 
-Gunakan struktur folder berikut:
+Destination rating must be calculated automatically.
 
-lib/
-  models/
-  screens/
-    home/
-    search/
-    detail/
-    favorite/
-  widgets/
-  services/
-    firebase_service.dart
-  main.dart
+Rules:
 
----
+When review added:
 
-## ⚙️ Development Rules for AI (IMPORTANT)
+* Recalculate average rating
 
-When generating code:
-1. Prioritize simplicity over over-engineering
-2. Use Firebase Firestore for real data operations
-3. Avoid unnecessary backend (no Node.js needed)
-4. Use dummy data only if Firebase is not yet connected
-5. Ensure every screen is UI-complete before adding features
-6. Use Material 3 consistently
-7. Keep code modular and reusable
+When review edited:
+
+* Recalculate average rating
+
+When review deleted:
+
+* Recalculate average rating
+
+Store results in:
+
+destinations.averageRating
+
+destinations.totalReviews
 
 ---
 
-## 📌 Development Goal
+# Authentication
 
-At the end of this project:
-- App must be runnable on Android
-- Must have working navigation
-- Must display Firestore data (or fallback dummy data)
-- Must look presentable for college presentation
-- must using english language
+Supported methods:
+
+1. Email and Password
+2. Google Sign In
+
+When a new account is created:
+
+Automatically create Firestore document:
+
+users/{uid}
+
+Default role:
+
+user
+
+Admin role is assigned manually through Firestore.
+
+---
+
+# Application Screens
+
+## Public
+
+* Splash Screen
+* Onboarding Screen
+
+## Authentication
+
+* Login Screen
+* Register Screen
+
+## User Area
+
+* Home Screen
+* Search Screen
+* Destination Detail Screen
+* Favorites Screen
+* Profile Screen
+* Edit Profile Screen
+
+## Admin Area
+
+* Admin Dashboard
+* Destination Management Screen
+* Add Destination Screen
+* Edit Destination Screen
+* Admin Profile Screen
+
+---
+
+# Onboarding Experience
+
+Create a premium onboarding experience.
+
+Page 1:
+Discover Amazing Destinations
+
+Page 2:
+Plan Your Perfect Journey
+
+Page 3:
+Save Favorites and Share Reviews
+
+Features:
+
+* Smooth animations
+* Skip button
+* Next button
+* Get Started button
+
+Show only on first launch.
+
+---
+
+# UI / UX Guidelines
+
+Design inspiration:
+
+* Traveloka
+* Airbnb
+
+Requirements:
+
+* Modern
+* Clean
+* Professional
+* Mobile-first
+
+Use:
+
+* Card-based layouts
+* Rounded corners
+* Material 3
+* Dark Mode
+* Light Mode
+
+Dark mode must work for:
+
+* User area
+* Admin area
+
+---
+
+# Profile Features
+
+Users and Admins can:
+
+* View profile
+* Update profile photo
+* Update display name
+
+Profile photos must be stored in Firebase Storage.
+
+Store URL in:
+
+users.photoUrl
+
+---
+
+# Maps Integration
+
+Admin manages:
+
+* Latitude
+* Longitude
+
+User can:
+
+* View destination location
+* Open destination in Google Maps
+
+---
+
+# Important Development Rules
+
+1. Analyze the current codebase before making changes.
+2. Do not rewrite the entire project.
+3. Extend existing architecture.
+4. Fix bugs before adding new features.
+5. Keep Provider architecture.
+6. Keep Firebase integration.
+7. Maintain clean and reusable code.
+8. Ensure application is production-ready.
+9. Prevent rendering errors and layout exceptions.
+10. Ensure smooth navigation and loading states.
+
+---
+
+# Current Known Issues
+
+1. Favorite removal sometimes causes rendering issues.
+2. SliverAppBar layout assertion errors must be fixed.
+3. Profile photo feature is not implemented.
+4. Admin profile page is missing.
+5. Admin dark mode is missing.
+
+These issues should be prioritized before implementing new features.

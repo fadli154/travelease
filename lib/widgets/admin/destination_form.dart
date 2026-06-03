@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../models/destination_model.dart';
 import '../../theme/app_spacing.dart';
@@ -17,10 +14,7 @@ class DestinationForm extends StatefulWidget {
 
   final DestinationModel? initial;
   final bool isSaving;
-  final Future<void> Function(
-    DestinationModel model,
-    File? imageFile,
-  ) onSubmit;
+  final Future<void> Function(DestinationModel model) onSubmit;
 
   @override
   State<DestinationForm> createState() => _DestinationFormState();
@@ -32,25 +26,29 @@ class _DestinationFormState extends State<DestinationForm> {
   late final TextEditingController _location;
   late final TextEditingController _description;
   late final TextEditingController _category;
-  late final TextEditingController _rating;
   late final TextEditingController _ticketPrice;
-  File? _pickedImage;
-  final _picker = ImagePicker();
+  late final TextEditingController _latitude;
+  late final TextEditingController _longitude;
+  late final TextEditingController _imageUrl;
 
   @override
   void initState() {
     super.initState();
     final d = widget.initial;
     _name = TextEditingController(text: d?.name ?? '');
-    _location = TextEditingController(text: d?.location ?? '');
+    _location = TextEditingController(text: d?.locationName ?? '');
     _description = TextEditingController(text: d?.description ?? '');
     _category = TextEditingController(text: d?.category ?? '');
-    _rating = TextEditingController(
-      text: d != null ? d.rating.toString() : '4.5',
-    );
     _ticketPrice = TextEditingController(
       text: d != null && d.ticketPrice > 0 ? d.ticketPrice.toStringAsFixed(0) : '',
     );
+    _latitude = TextEditingController(
+      text: d != null && d.latitude != 0 ? d.latitude.toString() : '',
+    );
+    _longitude = TextEditingController(
+      text: d != null && d.longitude != 0 ? d.longitude.toString() : '',
+    );
+    _imageUrl = TextEditingController(text: d?.imageUrl ?? '');
   }
 
   @override
@@ -59,20 +57,11 @@ class _DestinationFormState extends State<DestinationForm> {
     _location.dispose();
     _description.dispose();
     _category.dispose();
-    _rating.dispose();
     _ticketPrice.dispose();
+    _latitude.dispose();
+    _longitude.dispose();
+    _imageUrl.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickImage() async {
-    final file = await _picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 1920,
-      imageQuality: 85,
-    );
-    if (file != null) {
-      setState(() => _pickedImage = File(file.path));
-    }
   }
 
   Future<void> _submit() async {
@@ -81,59 +70,58 @@ class _DestinationFormState extends State<DestinationForm> {
     final model = DestinationModel(
       id: widget.initial?.id ?? '',
       name: _name.text.trim(),
-      location: _location.text.trim(),
+      locationName: _location.text.trim(),
       description: _description.text.trim(),
-      imageUrl: widget.initial?.imageUrl ?? '',
-      rating: double.tryParse(_rating.text.trim()) ?? 0,
+      imageUrl: _imageUrl.text.trim(),
       category: _category.text.trim(),
       ticketPrice: double.tryParse(_ticketPrice.text.trim()) ?? 0,
+      latitude: double.tryParse(_latitude.text.trim()) ?? 0,
+      longitude: double.tryParse(_longitude.text.trim()) ?? 0,
+      averageRating: widget.initial?.averageRating ?? 0,
+      totalReviews: widget.initial?.totalReviews ?? 0,
       createdAt: widget.initial?.createdAt,
     );
 
-    await widget.onSubmit(model, _pickedImage);
+    await widget.onSubmit(model);
   }
 
   @override
   Widget build(BuildContext context) {
-    final existingUrl = widget.initial?.imageUrl ?? '';
+    final previewSeed = widget.initial?.id ?? _name.text.trim();
 
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          GestureDetector(
-            onTap: widget.isSaving ? null : _pickImage,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: SizedBox(
-                height: 180,
-                width: double.infinity,
-                child: _pickedImage != null
-                    ? Image.file(_pickedImage!, fit: BoxFit.cover)
-                    : existingUrl.isNotEmpty
-                        ? CachedDestinationImage(imageUrl: existingUrl)
-                        : ColoredBox(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.add_photo_alternate_outlined,
-                                  size: 48,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                ),
-                                const SizedBox(height: 8),
-                                const Text('Tap to upload image'),
-                              ],
-                            ),
-                          ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: SizedBox(
+              height: 180,
+              width: double.infinity,
+              child: CachedDestinationImage(
+                imageUrl: _imageUrl.text,
+                imageSeed: previewSeed.isEmpty ? 'preview' : previewSeed,
               ),
             ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Leave image URL empty to use a demo photo (Picsum). Firebase Storage is disabled for this demo build.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextFormField(
+            controller: _imageUrl,
+            enabled: !widget.isSaving,
+            decoration: const InputDecoration(
+              labelText: 'Image URL (optional)',
+              hintText: 'https://images.unsplash.com/... or leave empty',
+              prefixIcon: Icon(Icons.link_rounded),
+            ),
+            onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: AppSpacing.lg),
           TextFormField(
@@ -143,19 +131,52 @@ class _DestinationFormState extends State<DestinationForm> {
               labelText: 'Destination name',
               prefixIcon: Icon(Icons.place_outlined),
             ),
-            validator: (v) =>
-                v == null || v.trim().isEmpty ? 'Name is required' : null,
+            validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+            onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: AppSpacing.md),
           TextFormField(
             controller: _location,
             enabled: !widget.isSaving,
             decoration: const InputDecoration(
-              labelText: 'Location',
+              labelText: 'Location name',
               prefixIcon: Icon(Icons.location_on_outlined),
             ),
-            validator: (v) =>
-                v == null || v.trim().isEmpty ? 'Location is required' : null,
+            validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _latitude,
+                  enabled: !widget.isSaving,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'Latitude',
+                    prefixIcon: Icon(Icons.my_location_outlined),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: TextFormField(
+                  controller: _longitude,
+                  enabled: !widget.isSaving,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'Longitude',
+                    prefixIcon: Icon(Icons.explore_outlined),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.md),
           TextFormField(
@@ -165,45 +186,17 @@ class _DestinationFormState extends State<DestinationForm> {
               labelText: 'Category',
               prefixIcon: Icon(Icons.category_outlined),
             ),
-            validator: (v) =>
-                v == null || v.trim().isEmpty ? 'Category is required' : null,
+            validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
           ),
           const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _rating,
-                  enabled: !widget.isSaving,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: const InputDecoration(
-                    labelText: 'Rating',
-                    prefixIcon: Icon(Icons.star_outline_rounded),
-                  ),
-                  validator: (v) {
-                    final n = double.tryParse(v ?? '');
-                    if (n == null || n < 0 || n > 5) {
-                      return 'Rating 0–5';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: TextFormField(
-                  controller: _ticketPrice,
-                  enabled: !widget.isSaving,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Ticket (Rp)',
-                    prefixIcon: Icon(Icons.payments_outlined),
-                  ),
-                ),
-              ),
-            ],
+          TextFormField(
+            controller: _ticketPrice,
+            enabled: !widget.isSaving,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Ticket price (Rp)',
+              prefixIcon: Icon(Icons.payments_outlined),
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           TextFormField(
@@ -214,8 +207,7 @@ class _DestinationFormState extends State<DestinationForm> {
               labelText: 'Description',
               alignLabelWithHint: true,
             ),
-            validator: (v) =>
-                v == null || v.trim().isEmpty ? 'Description is required' : null,
+            validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
           ),
           const SizedBox(height: AppSpacing.xl),
           FilledButton(

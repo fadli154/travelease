@@ -1,65 +1,53 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Persists whether the splash screen was shown.
-/// Falls back to in-memory storage if the native plugin is unavailable
-/// (e.g. after hot restart before a full rebuild).
 class OnboardingPrefs {
   static const _splashSeenKey = 'splash_seen';
+  static const _onboardingCompletedKey = 'onboarding_completed';
 
-  static bool _memorySeen = false;
+  static bool _memorySplashSeen = false;
+  static bool _memoryOnboardingDone = false;
   static bool? _pluginWorks;
 
-  static Future<bool> hasSeenSplash() async {
-    if (_memorySeen) return true;
-
-    if (_pluginWorks == false) {
-      return _memorySeen;
-    }
-
+  static Future<SharedPreferences?> _prefs() async {
+    if (_pluginWorks == false) return null;
     try {
       final prefs = await SharedPreferences.getInstance();
       _pluginWorks = true;
-      final seen = prefs.getBool(_splashSeenKey) ?? false;
-      if (seen) _memorySeen = true;
-      return seen;
-    } on MissingPluginException catch (e, st) {
+      return prefs;
+    } on MissingPluginException {
       _pluginWorks = false;
-      if (kDebugMode) {
-        debugPrint(
-          'OnboardingPrefs: shared_preferences unavailable ($e). '
-          'Stop the app and run `flutter run` (full rebuild). '
-          'Using in-memory splash flag for this session.',
-        );
-        debugPrint('$st');
-      }
-      return _memorySeen;
-    } catch (e, st) {
-      if (kDebugMode) {
-        debugPrint('OnboardingPrefs.hasSeenSplash failed: $e');
-        debugPrint('$st');
-      }
-      return _memorySeen;
+      return null;
     }
   }
 
+  static Future<bool> hasSeenSplash() async {
+    if (_memorySplashSeen) return true;
+    final prefs = await _prefs();
+    if (prefs == null) return _memorySplashSeen;
+    final seen = prefs.getBool(_splashSeenKey) ?? false;
+    if (seen) _memorySplashSeen = true;
+    return seen;
+  }
+
   static Future<void> markSplashSeen() async {
-    _memorySeen = true;
+    _memorySplashSeen = true;
+    final prefs = await _prefs();
+    await prefs?.setBool(_splashSeenKey, true);
+  }
 
-    if (_pluginWorks == false) return;
+  static Future<bool> hasCompletedOnboarding() async {
+    if (_memoryOnboardingDone) return true;
+    final prefs = await _prefs();
+    if (prefs == null) return _memoryOnboardingDone;
+    final done = prefs.getBool(_onboardingCompletedKey) ?? false;
+    if (done) _memoryOnboardingDone = true;
+    return done;
+  }
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      _pluginWorks = true;
-      await prefs.setBool(_splashSeenKey, true);
-    } on MissingPluginException {
-      _pluginWorks = false;
-    } catch (e, st) {
-      if (kDebugMode) {
-        debugPrint('OnboardingPrefs.markSplashSeen failed: $e');
-        debugPrint('$st');
-      }
-    }
+  static Future<void> markOnboardingCompleted() async {
+    _memoryOnboardingDone = true;
+    final prefs = await _prefs();
+    await prefs?.setBool(_onboardingCompletedKey, true);
   }
 }

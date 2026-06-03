@@ -33,7 +33,10 @@ class DestinationCard extends StatelessWidget {
           children: [
             AspectRatio(
               aspectRatio: 16 / 9,
-              child: CachedDestinationImage(imageUrl: destination.imageUrl),
+              child: CachedDestinationImage(
+                imageUrl: destination.imageUrl,
+                imageSeed: destination.id,
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.cardInner),
@@ -75,7 +78,7 @@ class DestinationCard extends StatelessWidget {
                       Icon(Icons.star_rounded, size: 18, color: Colors.amber[700]),
                       const SizedBox(width: 4),
                       Text(
-                        destination.rating.toStringAsFixed(1),
+                        destination.displayRating.toStringAsFixed(1),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),

@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/destination_model.dart';
 import '../../providers/auth_provider.dart';
@@ -8,6 +11,8 @@ import '../../theme/app_spacing.dart';
 import '../../widgets/animated_favorite_button.dart';
 import '../../widgets/cached_destination_image.dart';
 import '../../widgets/destination_map_card.dart';
+import '../../utils/app_feedback.dart';
+import '../../widgets/review_section.dart';
 import '../auth/login_screen.dart';
 
 class DestinationDetailScreen extends StatefulWidget {
@@ -27,33 +32,69 @@ class DestinationDetailScreen extends StatefulWidget {
 
 class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
   bool _isToggling = false;
+  bool _isFavorite = false;
+  StreamSubscription<bool>? _favoriteSub;
 
   FirebaseService get _service => widget.service ?? FirebaseService();
 
-  Future<void> _toggleFavorite(String userId, bool currentlyFavorite) async {
+  @override
+  void initState() {
+    super.initState();
+    _bindFavoriteStream();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _bindFavoriteStream();
+  }
+
+  void _bindFavoriteStream() {
+    final userId = context.read<AuthProvider>().currentUser?.uid ?? '';
+    _favoriteSub?.cancel();
+    if (userId.isEmpty) {
+      _isFavorite = false;
+      return;
+    }
+    _favoriteSub = _service.isFavorite(userId, widget.destination.id).listen((
+      value,
+    ) {
+      if (mounted) setState(() => _isFavorite = value);
+    });
+  }
+
+  @override
+  void dispose() {
+    _favoriteSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _toggleFavorite(String userId) async {
     if (_isToggling) return;
+    final wasFavorite = _isFavorite;
 
     setState(() => _isToggling = true);
     try {
       await _service.toggleFavorite(
         userId,
         widget.destination.id,
-        currentlyFavorite: currentlyFavorite,
+        currentlyFavorite: wasFavorite,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            currentlyFavorite
-                ? 'Removed from favorites'
-                : 'Added to favorites',
-          ),
-        ),
+      AppFeedback.success(
+        context,
+        wasFavorite
+            ? 'Favorite removed successfully'
+            : 'Favorite added successfully',
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not update favorite: $e')),
+      AppFeedback.error(
+        context,
+        AppFeedback.actionError(
+          e,
+          wasFavorite ? 'Remove favorite' : 'Add favorite',
+        ),
       );
     } finally {
       if (mounted) setState(() => _isToggling = false);
@@ -68,38 +109,72 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
     final auth = context.watch<AuthProvider>();
     final userId = auth.currentUser?.uid ?? '';
     final isLoggedIn = userId.isNotEmpty;
+    final displayRating = destination.displayRating;
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
       body: CustomScrollView(
         slivers: [
-          // ── Hero image app bar ─────────────────────────────────────────────
           SliverAppBar(
-            expandedHeight: 340,
+            expandedHeight: 360,
             pinned: true,
-            stretch: true,
+            stretch: false,
             backgroundColor: colorScheme.surface,
             flexibleSpace: FlexibleSpaceBar(
-              stretchModes: const [
-                StretchMode.zoomBackground,
-                StretchMode.blurBackground,
-              ],
+              titlePadding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                bottom: 16,
+              ),
+              title: Text(
+                destination.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  shadows: const [Shadow(blurRadius: 8, color: Colors.black54)],
+                ),
+              ),
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  CachedDestinationImage(imageUrl: destination.imageUrl),
+                  CachedDestinationImage(
+                    imageUrl: destination.imageUrl,
+                    imageSeed: destination.id,
+                  ),
                   DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withValues(alpha: 0.35),
+                          Colors.black.withValues(alpha: 0.4),
                           Colors.transparent,
-                          Colors.black.withValues(alpha: 0.55),
+                          Colors.black.withValues(alpha: 0.75),
                         ],
-                        stops: const [0, 0.45, 1],
+                        stops: const [0, 0.4, 1],
                       ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    bottom: 110,
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _HeroChip(
+                          icon: Icons.category_rounded,
+                          label: destination.category,
+                        ),
+                        if (destination.ticketPrice > 0)
+                          _HeroChip(
+                            icon: Icons.confirmation_number_outlined,
+                            label:
+                                'Rp ${_formatPrice(destination.ticketPrice)}',
+                          ),
+                      ],
                     ),
                   ),
                 ],
@@ -107,29 +182,22 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
             ),
             actions: [
               if (isLoggedIn)
-                StreamBuilder<bool>(
-                  stream: _service.isFavorite(userId, destination.id),
-                  builder: (context, snapshot) {
-                    final isFavorite = snapshot.data ?? false;
-                    return AnimatedFavoriteButton(
-                      isFavorite: isFavorite,
-                      isLoading: _isToggling,
-                      onPressed: () => _toggleFavorite(userId, isFavorite),
-                    );
-                  },
+                AnimatedFavoriteButton(
+                  isFavorite: _isFavorite,
+                  isLoading: _isToggling,
+                  onPressed: () => _toggleFavorite(userId),
                 ),
             ],
           ),
-
-          // ── Content ────────────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Transform.translate(
               offset: const Offset(0, -20),
               child: Container(
                 decoration: BoxDecoration(
                   color: colorScheme.surface,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(28)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(28),
+                  ),
                 ),
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.xl,
@@ -140,50 +208,29 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Name + rating
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            destination.name,
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
-                              height: 1.15,
+                    _StatsGrid(
+                      location: destination.locationName,
+                      rating: displayRating,
+                      totalReviews: destination.totalReviews,
+                      ticketPrice: destination.ticketPrice,
+                      formatPrice: _formatPrice,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    _DetailActionRow(
+                      isLoggedIn: isLoggedIn,
+                      isFavorite: _isFavorite,
+                      isToggling: _isToggling,
+                      onFavorite: () => _toggleFavorite(userId),
+                      onMaps: () => _openMaps(destination),
+                      onReview: isLoggedIn
+                          ? () => _scrollToReviews(context)
+                          : () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const LoginScreen(),
+                              ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        _RatingBadge(rating: destination.rating),
-                      ],
                     ),
-
-                    const SizedBox(height: AppSpacing.md),
-
-                    _InfoRow(
-                      icon: Icons.location_on_rounded,
-                      label: destination.location,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    _InfoRow(
-                      icon: Icons.category_outlined,
-                      label: destination.category,
-                    ),
-
-                    // Ticket price
-                    if (destination.ticketPrice > 0) ...[
-                      const SizedBox(height: AppSpacing.sm),
-                      _InfoRow(
-                        icon: Icons.confirmation_number_outlined,
-                        label:
-                            'Rp ${destination.ticketPrice.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
-                      ),
-                    ],
-
                     const SizedBox(height: AppSpacing.section),
-
-                    // Overview
                     Text(
                       'Overview',
                       style: theme.textTheme.titleLarge?.copyWith(
@@ -200,58 +247,13 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
                         color: colorScheme.onSurfaceVariant,
                       ),
                     ),
-
                     const SizedBox(height: AppSpacing.section),
-                    DestinationMapCard(
-                      location: destination.location,
-                      placeName: destination.name,
+                    DestinationMapCard(destination: destination),
+                    const SizedBox(height: AppSpacing.section),
+                    ReviewSection(
+                      destinationId: destination.id,
+                      service: _service,
                     ),
-                    const SizedBox(height: AppSpacing.section),
-
-                    // Favorite button or login prompt
-                    if (isLoggedIn)
-                      StreamBuilder<bool>(
-                        stream: _service.isFavorite(userId, destination.id),
-                        builder: (context, snapshot) {
-                          final isFavorite = snapshot.data ?? false;
-                          return SizedBox(
-                            width: double.infinity,
-                            child: FilledButton.icon(
-                              onPressed: _isToggling
-                                  ? null
-                                  : () => _toggleFavorite(userId, isFavorite),
-                              icon: Icon(
-                                isFavorite
-                                    ? Icons.favorite_rounded
-                                    : Icons.favorite_border_rounded,
-                              ),
-                              label: Text(
-                                isFavorite
-                                    ? 'Saved to Favorites'
-                                    : 'Add to Favorites',
-                              ),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: isFavorite
-                                    ? colorScheme.errorContainer
-                                    : colorScheme.primary,
-                                foregroundColor: isFavorite
-                                    ? colorScheme.onErrorContainer
-                                    : colorScheme.onPrimary,
-                              ),
-                            ),
-                          );
-                        },
-                      )
-                    else
-                      OutlinedButton.icon(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const LoginScreen(),
-                          ),
-                        ),
-                        icon: const Icon(Icons.favorite_border_rounded),
-                        label: const Text('Sign in to save favorite'),
-                      ),
                   ],
                 ),
               ),
@@ -261,64 +263,238 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
       ),
     );
   }
+
+  Future<void> _openMaps(DestinationModel destination) async {
+    final uri = destination.hasCoordinates
+        ? Uri.parse(
+            'https://www.google.com/maps/search/?api=1&query=${destination.latitude},${destination.longitude}',
+          )
+        : Uri.parse(
+            'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(destination.locationName)}',
+          );
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  void _scrollToReviews(BuildContext context) {
+    // Review section is below the fold; user can scroll — show hint.
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Scroll down to write a review'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  String _formatPrice(double price) {
+    return price
+        .toStringAsFixed(0)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (m) => '${m[1]}.',
+        );
+  }
 }
 
-// ── Private widgets ───────────────────────────────────────────────────────────
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.icon, required this.label});
+class _HeroChip extends StatelessWidget {
+  const _HeroChip({required this.icon, required this.label});
 
   final IconData icon;
   final String label;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: colorScheme.primary),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Text(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
             label,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: colorScheme.onSurfaceVariant,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatsGrid extends StatelessWidget {
+  const _StatsGrid({
+    required this.location,
+    required this.rating,
+    required this.totalReviews,
+    required this.ticketPrice,
+    required this.formatPrice,
+  });
+
+  final String location;
+  final double rating;
+  final int totalReviews;
+  final double ticketPrice;
+  final String Function(double) formatPrice;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 10,
+      crossAxisSpacing: 10,
+      childAspectRatio: 1.55,
+      children: [
+        _StatTile(
+          icon: Icons.location_on_rounded,
+          label: 'Location',
+          value: location,
+          color: colorScheme.primaryContainer,
+        ),
+        _StatTile(
+          icon: Icons.star_rounded,
+          label: 'Rating',
+          value: rating.toStringAsFixed(1),
+          subtitle: totalReviews > 0
+              ? '$totalReviews reviews'
+              : 'No reviews yet',
+          color: Colors.amber.withValues(alpha: 0.2),
+        ),
+        _StatTile(
+          icon: Icons.confirmation_number_outlined,
+          label: 'Ticket',
+          value: ticketPrice > 0
+              ? 'Rp ${formatPrice(ticketPrice)}'
+              : 'Free / N/A',
+          color: colorScheme.secondaryContainer,
+        ),
+        _StatTile(
+          icon: Icons.reviews_outlined,
+          label: 'Reviews',
+          value: '$totalReviews',
+          color: colorScheme.tertiaryContainer,
         ),
       ],
     );
   }
 }
 
-class _RatingBadge extends StatelessWidget {
-  const _RatingBadge({required this.rating});
+class _StatTile extends StatelessWidget {
+  const _StatTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+    this.subtitle,
+  });
 
-  final double rating;
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.amber.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.withValues(alpha: 0.35)),
+    return Card(
+      color: color,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 20),
+            const Spacer(),
+            Text(label, style: Theme.of(context).textTheme.labelMedium),
+            Text(
+              value,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            if (subtitle != null)
+              Text(subtitle!, style: Theme.of(context).textTheme.labelSmall),
+          ],
+        ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.star_rounded, color: Colors.amber[700], size: 22),
-          const SizedBox(width: 4),
-          Text(
-            rating.toStringAsFixed(1),
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
+    );
+  }
+}
+
+class _DetailActionRow extends StatelessWidget {
+  const _DetailActionRow({
+    required this.isLoggedIn,
+    required this.isFavorite,
+    required this.isToggling,
+    required this.onFavorite,
+    required this.onMaps,
+    required this.onReview,
+  });
+
+  final bool isLoggedIn;
+  final bool isFavorite;
+  final bool isToggling;
+  final VoidCallback onFavorite;
+  final VoidCallback onMaps;
+  final VoidCallback onReview;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: FilledButton.tonalIcon(
+            onPressed: isToggling || !isLoggedIn ? null : onFavorite,
+            icon: Icon(
+              isFavorite
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
+            ),
+            label: Text(
+              isFavorite ? 'Saved' : 'Favorite',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: FilledButton.tonalIcon(
+            onPressed: onMaps,
+            icon: const Icon(Icons.map_rounded),
+            label: const Text(
+              'Maps',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: FilledButton.tonalIcon(
+            onPressed: onReview,
+            icon: const Icon(Icons.rate_review_outlined),
+            label: const Text(
+              'Review',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

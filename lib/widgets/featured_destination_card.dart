@@ -35,7 +35,10 @@ class FeaturedDestinationCard extends StatelessWidget {
               SizedBox(
                 height: 130,
                 width: double.infinity,
-                child: CachedDestinationImage(imageUrl: destination.imageUrl),
+                child: CachedDestinationImage(
+                  imageUrl: destination.imageUrl,
+                  imageSeed: destination.id,
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.all(12),
@@ -54,7 +57,7 @@ class FeaturedDestinationCard extends StatelessWidget {
                         Icon(Icons.star_rounded, size: 16, color: Colors.amber[700]),
                         const SizedBox(width: 2),
                         Text(
-                          destination.rating.toStringAsFixed(1),
+                          destination.displayRating.toStringAsFixed(1),
                           style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
                         ),
                       ],

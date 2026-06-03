@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
+import '../../widgets/auth_feedback.dart';
+import '../../widgets/google_sign_in_button.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -39,15 +41,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
 
     if (!mounted) return;
-    if (!success && auth.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.error!),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+    if (success) {
+      auth.clearError();
+    } else {
+      showAuthFeedback(context, auth);
     }
-    // Success → AuthGate handles navigation automatically.
+  }
+
+  Future<void> _signInWithGoogle() async {
+    final auth = context.read<AuthProvider>();
+    final success = await auth.signInWithGoogle();
+    if (!mounted) return;
+    if (success) {
+      auth.clearError();
+    } else {
+      showAuthFeedback(context, auth);
+    }
   }
 
   @override
@@ -99,7 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _nameController,
                             textCapitalization: TextCapitalization.words,
                             textInputAction: TextInputAction.next,
-                            enabled: !auth.isLoading,
+                            enabled: !auth.isAuthActionLoading,
                             decoration: const InputDecoration(
                               labelText: 'Full name',
                               prefixIcon: Icon(Icons.person_outline_rounded),
@@ -122,7 +131,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
-                            enabled: !auth.isLoading,
+                            enabled: !auth.isAuthActionLoading,
                             decoration: const InputDecoration(
                               labelText: 'Email',
                               prefixIcon: Icon(Icons.email_outlined),
@@ -145,7 +154,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _passwordController,
                             obscureText: _obscurePassword,
                             textInputAction: TextInputAction.next,
-                            enabled: !auth.isLoading,
+                            enabled: !auth.isAuthActionLoading,
                             decoration: InputDecoration(
                               labelText: 'Password',
                               prefixIcon: const Icon(Icons.lock_outline_rounded),
@@ -177,7 +186,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _confirmController,
                             obscureText: _obscureConfirm,
                             textInputAction: TextInputAction.done,
-                            enabled: !auth.isLoading,
+                            enabled: !auth.isAuthActionLoading,
                             onFieldSubmitted: (_) => _register(),
                             decoration: InputDecoration(
                               labelText: 'Confirm password',
@@ -204,8 +213,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           // ── Create Account button ──────────────────────────
                           FilledButton(
-                            onPressed: auth.isLoading ? null : _register,
-                            child: auth.isLoading
+                            onPressed: auth.isAuthActionLoading ? null : _register,
+                            child: auth.isAuthActionLoading
                                 ? const SizedBox(
                                     height: 20,
                                     width: 20,
@@ -217,10 +226,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 : const Text('Create Account'),
                           ),
 
+                          const SizedBox(height: 24),
+                          Row(
+                            children: [
+                              Expanded(child: Divider(color: colorScheme.outlineVariant)),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                child: Text(
+                                  'or',
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                              Expanded(child: Divider(color: colorScheme.outlineVariant)),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          GoogleSignInButton(
+                            onPressed: auth.isAuthActionLoading ? null : _signInWithGoogle,
+                            label: 'Sign up with Google',
+                            isLoading: auth.isAuthActionLoading,
+                          ),
                           const SizedBox(height: 12),
-
                           TextButton(
-                            onPressed: auth.isLoading
+                            onPressed: auth.isAuthActionLoading
                                 ? null
                                 : () => Navigator.of(context).pop(),
                             child: const Text('Already have an account? Sign in'),

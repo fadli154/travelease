@@ -142,9 +142,9 @@ class FavoritesScreen extends StatelessWidget {
                 return const SliverFillRemaining(
                   child: EmptyState(
                     icon: Icons.favorite_border_rounded,
-                    title: 'No favorites yet',
+                    title: 'Favorites Empty',
                     subtitle:
-                        'Tap the heart on a destination detail page to save it here.',
+                        'Save places you love — tap the heart icon on any destination.',
                   ),
                 );
               }

@@ -46,8 +46,9 @@ class HomeScreen extends StatelessWidget {
                 SliverFillRemaining(
                   child: EmptyState(
                     icon: Icons.cloud_off_rounded,
-                    title: 'Something went wrong',
-                    subtitle: 'We could not load destinations.\n${snapshot.error}',
+                    title: 'Could not load destinations',
+                    subtitle:
+                        'Check your internet connection or Firestore rules.\n${snapshot.error}',
                   ),
                 ),
               ],
@@ -62,8 +63,9 @@ class HomeScreen extends StatelessWidget {
                 const SliverFillRemaining(
                   child: EmptyState(
                     icon: Icons.explore_off_rounded,
-                    title: 'No destinations yet',
-                    subtitle: 'Add destinations in Firestore to start exploring Indonesia.',
+                    title: 'Destinations Empty',
+                    subtitle:
+                        'No travel spots to show yet. Admin can add destinations from the dashboard.',
                   ),
                 ),
               ],

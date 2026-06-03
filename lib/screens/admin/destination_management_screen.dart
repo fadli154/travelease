@@ -5,6 +5,7 @@ import '../../services/firebase_service.dart';
 import '../../theme/app_spacing.dart';
 import '../../widgets/cached_destination_image.dart';
 import '../../widgets/empty_state.dart';
+import '../../utils/app_feedback.dart';
 import '../../widgets/skeleton_loaders.dart';
 import 'add_destination_screen.dart';
 import 'edit_destination_screen.dart';
@@ -54,39 +55,23 @@ class _DestinationManagementScreenState
   }
 
   Future<void> _confirmDelete(DestinationModel destination) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete destination?'),
-        content: Text('Remove "${destination.name}" permanently?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+    final ok = await AppFeedback.confirmDelete(
+      context,
+      title: 'Delete Destination',
+      message: 'Are you sure you want to delete this destination?',
     );
 
-    if (ok != true || !mounted) return;
+    if (!ok || !mounted) return;
 
     try {
       await _service.deleteDestination(destination.id);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Destination deleted')),
-      );
+      AppFeedback.success(context, 'Destination deleted successfully');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Delete failed: $e')),
+      AppFeedback.error(
+        context,
+        AppFeedback.actionError(e, 'Delete destination'),
       );
     }
   }
@@ -140,7 +125,10 @@ class _DestinationManagementScreenState
                     SizedBox(
                       width: 96,
                       height: 96,
-                      child: CachedDestinationImage(imageUrl: d.imageUrl),
+                      child: CachedDestinationImage(
+                        imageUrl: d.imageUrl,
+                        imageSeed: d.id,
+                      ),
                     ),
                     Expanded(
                       child: Padding(
@@ -168,7 +156,7 @@ class _DestinationManagementScreenState
                               children: [
                                 Icon(Icons.star_rounded,
                                     size: 16, color: Colors.amber[700]),
-                                Text(' ${d.rating.toStringAsFixed(1)}'),
+                                Text(' ${d.displayRating.toStringAsFixed(1)}'),
                                 const SizedBox(width: 12),
                                 Flexible(
                                   child: Text(

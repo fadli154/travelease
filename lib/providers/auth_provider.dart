@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
+import '../utils/auth_error_mapper.dart';
 
 class AuthProvider extends ChangeNotifier {
   AuthProvider({AuthService? authService})
@@ -10,114 +13,160 @@ class AuthProvider extends ChangeNotifier {
   final AuthService _authService;
 
   UserModel? _currentUser;
-  bool _isLoading = false;
+  bool _isLoading = true;
+  bool _isAuthActionLoading = false;
   String? _error;
+  String? _errorDetail;
+
+  StreamSubscription<UserModel?>? _authSubscription;
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
+  bool get isAuthActionLoading => _isAuthActionLoading;
   String? get error => _error;
+  String? get errorDetail => _errorDetail;
   bool get isLoggedIn => _currentUser != null;
   bool get isAdmin => _currentUser?.isAdmin ?? false;
 
   AuthService get authService => _authService;
 
-  // ── Init ───────────────────────────────────────────────────────────────────
-
-  /// Call once in main to keep [_currentUser] in sync with Firebase Auth.
   void listenToAuthChanges() {
-    _authService.authStateChanges.listen((user) {
-      _currentUser = user;
-      notifyListeners();
-    });
+    _authSubscription?.cancel();
+    _authSubscription = _authService.authStateChanges.listen(
+      _onAuthStreamUser,
+      onError: (Object e, StackTrace st) {
+        AuthErrorMapper.log(e, context: 'authStateChanges');
+        if (kDebugMode) debugPrint('[authStateChanges] $st');
+      },
+    );
   }
 
-  // ── Sign in ────────────────────────────────────────────────────────────────
+  /// Ignores stale stream events (e.g. after logout → login as another user).
+  void _onAuthStreamUser(UserModel? user) {
+    final firebaseUid = _authService.currentUid;
+
+    if (firebaseUid == null) {
+      _currentUser = null;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
+
+    if (user != null && user.uid == firebaseUid) {
+      _currentUser = user;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
+
+    if (_currentUser?.uid == firebaseUid) {
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
+
+    _isLoading = user == null;
+    notifyListeners();
+  }
 
   Future<bool> signIn({
     required String email,
     required String password,
   }) async {
-    _setLoading(true);
-    _error = null;
-    try {
-      _currentUser = await _authService.signIn(
-        email: email,
-        password: password,
-      );
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _error = _friendlyError(e.toString());
-      notifyListeners();
-      return false;
-    } finally {
-      _setLoading(false);
-    }
+    return _runAuthAction(
+      () async {
+        _currentUser = await _authService.signIn(
+          email: email,
+          password: password,
+        );
+      },
+      context: 'signIn',
+    );
   }
-
-  // ── Register ───────────────────────────────────────────────────────────────
 
   Future<bool> register({
     required String name,
     required String email,
     required String password,
   }) async {
-    _setLoading(true);
+    return _runAuthAction(
+      () async {
+        _currentUser = await _authService.register(
+          name: name,
+          email: email,
+          password: password,
+        );
+      },
+      context: 'register',
+    );
+  }
+
+  Future<bool> signInWithGoogle() async {
+    return _runAuthAction(
+      () async {
+        _currentUser = await _authService.signInWithGoogle();
+      },
+      context: 'signInWithGoogle',
+    );
+  }
+
+  Future<void> signOut() async {
+    _isAuthActionLoading = true;
     _error = null;
+    _errorDetail = null;
+    notifyListeners();
     try {
-      _currentUser = await _authService.register(
-        name: name,
-        email: email,
-        password: password,
-      );
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _error = _friendlyError(e.toString());
-      notifyListeners();
-      return false;
+      await _authService.signOut();
+      _currentUser = null;
     } finally {
-      _setLoading(false);
+      _isLoading = false;
+      _isAuthActionLoading = false;
+      notifyListeners();
     }
   }
 
-  // ── Sign out ───────────────────────────────────────────────────────────────
-
-  Future<void> signOut() async {
-    await _authService.signOut();
-    _currentUser = null;
+  void updateLocalUser(UserModel user) {
+    _currentUser = user;
     notifyListeners();
   }
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
 
   void clearError() {
     _error = null;
+    _errorDetail = null;
     notifyListeners();
   }
 
-  void _setLoading(bool value) {
-    _isLoading = value;
+  Future<bool> _runAuthAction(
+    Future<void> Function() action, {
+    required String context,
+  }) async {
+    _isAuthActionLoading = true;
+    _error = null;
+    _errorDetail = null;
     notifyListeners();
+    try {
+      await action();
+      _isLoading = false;
+      notifyListeners();
+      return _currentUser != null;
+    } catch (e, st) {
+      AuthErrorMapper.log(e, context: context);
+      if (kDebugMode) {
+        debugPrint('[$context] stack: $st');
+      }
+      _error = AuthErrorMapper.userMessage(e);
+      _errorDetail = AuthErrorMapper.debugMessage(e);
+      notifyListeners();
+      return false;
+    } finally {
+      _isAuthActionLoading = false;
+      notifyListeners();
+    }
   }
 
-  String _friendlyError(String raw) {
-    if (raw.contains('user-not-found') || raw.contains('wrong-password') ||
-        raw.contains('invalid-credential')) {
-      return 'Invalid email or password.';
-    }
-    if (raw.contains('email-already-in-use')) {
-      return 'An account already exists with this email.';
-    }
-    if (raw.contains('weak-password')) {
-      return 'Password must be at least 6 characters.';
-    }
-    if (raw.contains('invalid-email')) {
-      return 'Please enter a valid email address.';
-    }
-    if (raw.contains('network-request-failed')) {
-      return 'No internet connection. Please try again.';
-    }
-    return 'Something went wrong. Please try again.';
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
   }
 }

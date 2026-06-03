@@ -1,10 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 
 import '../../models/destination_model.dart';
 import '../../services/firebase_service.dart';
 import '../../theme/app_spacing.dart';
+import '../../utils/app_feedback.dart';
 import '../../widgets/admin/destination_form.dart';
 
 class AddDestinationScreen extends StatefulWidget {
@@ -21,26 +20,18 @@ class _AddDestinationScreenState extends State<AddDestinationScreen> {
 
   FirebaseService get _service => widget.service ?? FirebaseService();
 
-  Future<void> _onSubmit(DestinationModel model, File? imageFile) async {
+  Future<void> _onSubmit(DestinationModel model) async {
     setState(() => _isSaving = true);
     try {
-      final id = await _service.addDestination(model);
-      if (imageFile != null) {
-        final url = await _service.uploadDestinationImage(
-          imageFile: imageFile,
-          destinationId: id,
-        );
-        await _service.updateDestinationImageUrl(id, url);
-      }
+      await _service.addDestination(model);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Destination created')),
-      );
+      AppFeedback.success(context, 'Destination created successfully');
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to create: $e')),
+      AppFeedback.error(
+        context,
+        AppFeedback.actionError(e, 'Create destination'),
       );
     } finally {
       if (mounted) setState(() => _isSaving = false);

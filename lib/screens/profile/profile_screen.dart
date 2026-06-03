@@ -5,8 +5,12 @@ import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_theme_controller.dart';
+import '../../utils/app_feedback.dart';
+import '../../widgets/theme_mode_selector.dart';
 import '../../widgets/theme_toggle_button.dart';
+import '../../widgets/user_avatar.dart';
 import '../auth/login_screen.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -36,10 +40,7 @@ class ProfileScreen extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      colorScheme.primary,
-                      colorScheme.tertiary,
-                    ],
+                    colors: [colorScheme.primary, colorScheme.tertiary],
                   ),
                 ),
                 child: SafeArea(
@@ -48,7 +49,11 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       const SizedBox(height: 16),
                       // Avatar
-                      _AvatarCircle(name: user.name),
+                      UserAvatar(
+                        name: user.name,
+                        photoUrl: user.photoUrl,
+                        radius: 36,
+                      ),
                       const SizedBox(height: 14),
                       Text(
                         user.name,
@@ -71,9 +76,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
             ),
-            actions: [
-              ThemeToggleButton(controller: themeController),
-            ],
+            actions: [ThemeToggleButton(controller: themeController)],
           ),
 
           // ── Info section ───────────────────────────────────────────────────
@@ -99,26 +102,51 @@ class ProfileScreen extends StatelessWidget {
                   _InfoTile(
                     icon: Icons.shield_outlined,
                     title: 'Role',
-                    subtitle: user.role == UserRole.admin ? 'Administrator' : 'User',
+                    subtitle: user.role == UserRole.admin
+                        ? 'Administrator'
+                        : 'User',
                   ),
 
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const EditProfileScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.edit_outlined),
+                    label: const Text('Edit profile'),
+                  ),
                   const SizedBox(height: 24),
                   _SectionLabel(label: 'Preferences'),
                   const SizedBox(height: 10),
 
-                  // Dark mode toggle tile
                   Card(
-                    child: ListTile(
-                      leading: Icon(
-                        themeController.themeMode == ThemeMode.dark
-                            ? Icons.dark_mode_rounded
-                            : Icons.light_mode_rounded,
-                        color: colorScheme.primary,
-                      ),
-                      title: const Text('Dark Mode'),
-                      trailing: Switch(
-                        value: themeController.themeMode == ThemeMode.dark,
-                        onChanged: (_) => themeController.toggleTheme(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.palette_outlined,
+                                color: colorScheme.primary,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Appearance',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          ThemeModeSelector(controller: themeController),
+                        ],
                       ),
                     ),
                   ),
@@ -156,28 +184,11 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Future<void> _confirmSignOut(BuildContext context, AuthProvider auth) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Sign out?'),
-        content: const Text('You will be returned to the login screen.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: const Text('Sign Out'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      await auth.signOut();
+    final confirmed = await AppFeedback.confirmSignOut(context);
+    if (!confirmed) return;
+    await auth.signOut();
+    if (context.mounted) {
+      await AppFeedback.logoutSuccess(context);
     }
   }
 }
@@ -224,6 +235,24 @@ class _GuestProfileView extends StatelessWidget {
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
+              const SizedBox(height: 20),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Appearance',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 12),
+                      ThemeModeSelector(controller: themeController),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 28),
               FilledButton.icon(
                 onPressed: () {
@@ -245,38 +274,6 @@ class _GuestProfileView extends StatelessWidget {
 }
 
 // ── Private widgets ──────────────────────────────────────────────────────────
-
-class _AvatarCircle extends StatelessWidget {
-  const _AvatarCircle({required this.name});
-  final String name;
-
-  @override
-  Widget build(BuildContext context) {
-    final initials = name.trim().isNotEmpty
-        ? name.trim().split(' ').map((e) => e[0].toUpperCase()).take(2).join()
-        : '?';
-
-    return Container(
-      width: 72,
-      height: 72,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.25),
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 2),
-      ),
-      child: Center(
-        child: Text(
-          initials,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 26,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _RoleBadge extends StatelessWidget {
   const _RoleBadge({required this.role});

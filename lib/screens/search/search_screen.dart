@@ -56,7 +56,7 @@ class _SearchScreenState extends State<SearchScreen> {
       }).toList();
     }
 
-    results.sort((a, b) => b.rating.compareTo(a.rating));
+    results.sort((a, b) => b.displayRating.compareTo(a.displayRating));
     return results;
   }
 
